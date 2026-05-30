@@ -1,24 +1,25 @@
 CATBASE COMPILER — END USER LICENSE AGREEMENT
-Version 1.0, [dorobotai.com / catbase]
 
-Copyright © 2026 [dorobotai.com]. All rights reserved.
-
-This software (the "Software"), including the catbase compiler binaries
-distributed via this repository and GitHub Releases, is provided FREE OF
-CHARGE for individual, educational, and open-source development use.
+Version 1.0, dorobotai.com / catbase
+Copyright © 2026 dorobotai.com. All rights reserved.
+This software (the "Software"), including the CatBase compiler binaries distributed via this repository and GitHub Releases, is provided free of charge​ for individual, educational, and open-source development use.
 
 YOU ARE GRANTED THE RIGHT TO:
-  ✅ Download and install the Software
-  ✅ Use the Software to compile catbase source code
-  ✅ Distribute programs/libraries YOU compiled with the Software
-    (the output objects and binaries are YOURS, not ours)
+✅ Download and install the Software
+✅ Use the Software to compile CatBase source code
+✅ Distribute programs/libraries you compiled​ with the Software
+
+(the output objects and binaries are yours, not ours)
 
 YOU ARE NOT GRANTED THE RIGHT TO:
-  ❌ Reverse-engineer, decompile, or disassemble the Software
-  ❌ Modify, patch, or create derivative works of the Software itself
-  ❌ Redistribute the Software binary itself under a different license
-  ❌ Remove or alter any copyright/attribution notices
+❌ Reverse-engineer, decompile, or disassemble the Software
+❌ Modify, patch, or create derivative works of the Software itself
+❌ Redistribute the Software binary itself under a different license
+❌ Remove or alter any copyright, attribution, or license notices
+❌ Remove, modify, or redistribute this License Agreement as a standalone file separate from the Software
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+LICENSE RETENTION REQUIREMENT
+You must retain this License Agreement in its entirety, without modification, in any copy of the Software you distribute or deploy.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
 
-Contact: [bell.zhong@dorobot.net / GitHub issue tracker]
+Contact: bell.zhong@dorobot.net / GitHub Issue Tracker
