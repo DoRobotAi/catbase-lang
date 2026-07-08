@@ -1,0 +1,4 @@
+def main(args:list[str]) {
+    # 传 6 个参数，应该报错
+    response:str = http_post("url", "h", {}, "d", 1, "extra")
+}

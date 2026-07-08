@@ -1,0 +1,6 @@
+def main(args:list[str]) {
+    # 测试 input 函数（暂不支持可选参数）
+    print("请输入您的姓名：", end="")
+    name:str = input()
+    print(name)
+}

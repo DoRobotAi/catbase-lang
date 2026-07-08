@@ -1,0 +1,39 @@
+def main(args:list[str]) {
+	prompt: str = "你好"
+    max_tokens: int = 1000
+    temperature: float = 0.1
+    #base_url: str = "http://localhost:19090/v1"
+    model_path: str = "model"
+    #url: str = base_url + "/chat/completions"
+
+    # 定义 messages
+    messages: list[dict[str, str]] = [
+        {
+            "role": "system", 
+            "content": "直接回答问题，不要有任何思考过程。"
+        }, 
+        {"role": "user", "content": prompt}
+    ]    
+    
+    # 使用 dict[str, any] 存储简单类型
+    data: dict[str, any] = {
+        "model": model_path, 
+        "messages": messages, 
+        "max_tokens": max_tokens, 
+        "temperature": temperature, 
+        "top_p": 0.9,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0.5,        
+        "stream": True
+    }
+    
+    # 转换为 JSON
+    json_str: str = json_dumps(data)
+    print("JSON:", json_str)
+    
+    # 使用这些变量以避免警告
+    print("model:", model_path)
+    print("max_tokens:", max_tokens)
+    print("temperature:", temperature)
+    print("messages:", messages)
+}

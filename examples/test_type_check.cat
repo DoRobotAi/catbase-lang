@@ -1,0 +1,6 @@
+def main(args:list[str]) {
+    # 测试不支持的类型转换
+    # x:dict[str, any] = {}
+    y:str = str(1)  # dict 类型不能直接转换为 str，应该报错
+    print(y)
+}

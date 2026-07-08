@@ -1,0 +1,35 @@
+# Test await with return value
+
+async def compute_sum(a:int, b:int) -> int {
+    print("Computing sum of", a, "and", b, "\n")
+    return a + b
+}
+
+async def get_message() -> str {
+    print("Getting message\n")
+    return "Hello from async!"
+}
+
+def main(args:list[str]) {
+    print("=== Testing await with return values ===\n")
+
+    # Test 1: await with int return
+    print("--- Test 1: await with int return ---\n")
+    result:int = await compute_sum(5, 3)
+    print("Result:", result, "\n")
+
+    # Test 2: await with str return
+    print("--- Test 2: await with str return ---\n")
+    msg:str = await get_message()
+    print("Message:", msg, "\n")
+
+    # Test 3: multiple awaits
+    print("--- Test 3: multiple awaits ---\n")
+    r1:int = await compute_sum(10, 20)
+    r2:int = await compute_sum(100, 200)
+    print("Sum 1:", r1, "\n")
+    print("Sum 2:", r2, "\n")
+    print("Total:", r1 + r2, "\n")
+
+    print("=== All tests completed ===\n")
+}

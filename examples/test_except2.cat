@@ -1,0 +1,8 @@
+def main(args:list[str]) {
+    try {
+        print("hello")
+    }
+    except e {
+        print(e)
+    }
+}

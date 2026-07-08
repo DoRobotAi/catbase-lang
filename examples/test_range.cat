@@ -1,0 +1,5 @@
+def main(args:list[str]) {
+    for i in range(0, 5) {
+        print("i = ", i)
+    }
+}

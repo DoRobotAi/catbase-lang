@@ -1,0 +1,11 @@
+# Test global variable in function
+MY_VAR: int = 100
+
+def test_func() {
+    x: int = MY_VAR
+    print(x)
+}
+
+def main(args: list[str]) {
+    print(MY_VAR)
+}

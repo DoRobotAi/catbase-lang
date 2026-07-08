@@ -1,0 +1,23 @@
+def test_default_params(var1: int = 1, var2: int = 2) {
+    print(f"var1={var1}, var2={var2}")
+}
+
+def test_kw_args(a: int, b: int, c: int=3) {
+    print(f"a={a}, b={b}, c={c}")
+}
+
+def main(args:list[str]) {
+    print("=== 测试参数默认值 ===")
+    test_default_params()
+    test_default_params(10)
+    test_default_params(10, 20)
+    
+    print("\n=== 测试参数名传参 ===")
+    test_kw_args(1, 2)
+    test_kw_args(a=1, b=2)
+    test_kw_args(b=2, a=1)
+    test_kw_args(1, b=2, c=4)
+    
+    print("\n=== 测试命令行参数 ===")
+    print(len(args))
+}

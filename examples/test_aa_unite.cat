@@ -1,0 +1,117 @@
+import "./import_mat.cat" as addcat
+import "./import_file.cat" as file_mod
+
+import "/usr/lib/x86_64-linux-gnu/libm.so" as math
+#import "/usr/lib/aarch64-linux-gnu/libm.so" as math
+
+from math import sqrt(x:float) -> float
+from math import sin(x:float) -> float
+
+def test() {
+    # 测试 Dict
+    d: dict[str, int] = {"a": 1, "b": 2}
+    print(d)
+    
+    # 测试内置函数
+    print(len("hello"))
+    print(len([1, 2, 3]))
+    print(type(10))
+    print(type("hello"))
+    print("float(10)=", float(10))
+    print("bool(0)=", bool(0))
+    print("bool(1)=", bool(1))
+    print("abs(-10)=", abs(-10))
+    print("max(5, 10)=", max(5, 10))
+    print("min(5, 10)=", min(5, 10))
+    print("sum([1, 2, 3, 4, 5])=", sum([1, 2, 3, 4, 5]))	
+    
+    # 测试字符串方法
+    s: str = "Hello World"
+    print("s.upper()=", s.upper())
+    print("s.lower()=", s.lower())
+    print("s.capitalize()=", s.capitalize())
+    print("s.title()=", s.title())
+    print("s.strip()=", s.strip())
+    print("s.find(\"World\")=", s.find("World"))
+    print("s.rfind(\"l\")=", s.rfind("l"))
+    print("s.count(\"l\")=", s.count("l"))
+    print("s.startswith(\"Hello\")=", s.startswith("Hello"))
+    print("s.endswith(\"World\")=", s.endswith("World"))
+    print("s.split(\" \")=", s.split(" "))
+    print("s.replace(\"World\", \"CatBase\")=", s.replace("World", "CatBase"))
+    print("s.isalpha()=", s.isalpha())
+    num_str: str = "123"
+    print("num_str.isnumeric()=", num_str.isnumeric())	
+}
+
+def main(args:list[str]) {
+	a:int=addcat.add(1,2)
+	print("addcat.add(1,2)=", a)
+	print("addcat.sub(1,2)=", addcat.sub(1,2))
+	print("addcat.mul(1,2)=", addcat.mul(1,2))
+	print("addcat.div(1,2)=", addcat.div(1,2))
+	b:str=str(addcat.fadd(1.0,2.1))
+	print("这个字符串：", b, sep="")
+	print("这个字符串：=", b)
+	print("addcat.fsub(1.1,2.1)=", addcat.fsub(1.1,2.1))
+	print("addcat.fmul(2.0,4.0)=", addcat.fmul(2.0,4.0))
+	print("addcat.fdiv(2.0,5.0)=", addcat.fdiv(2.0,5.0))
+
+	# 整型列表
+	int_list: list[int] = [1, 2, 3]
+
+	# 字符串列表
+	str_list: list[str] = ["a", "b", "c"]
+
+	print("int_list:", int_list)
+	print("str_list:", str_list)
+
+	# 文件操作测试
+	# 写入文件
+	file_mod.writeFile("First line")
+	# 追加内容
+	file_mod.appendFile("Second line")
+	# 在位置 6 插入内容
+	file_mod.writeFileAt("Inserted ", 6)
+	# 读取并打印文件内容
+	cont:str=file_mod.readFile()
+	print("file_mod.readFile()=", cont)
+
+	file_mod.writeFile("Inserted this is way 2\n")
+	# 读取并打印文件内容
+	cont=file_mod.readFile()
+	print("file_mod.readFile()=", cont)
+
+	test()
+
+	ac:float=addcat.ftat(a=12)
+	print("addcat.ftat(a=12)=", ac)
+	ac=addcat.ftat(a=10,b=2)
+	print("addcat.ftat(a=10,b=2)=", ac)
+
+	xa:str=addcat.xtat(3,7)
+	print("addcat.xtat(3,7)=", xa)
+
+	xb:str=addcat.xtat(1,1)
+	print(xb)
+
+	if len(args) > 0 {
+		print(args[0])
+	} else {
+		print("No command line arguments")
+	}
+
+	dictx:dict[int,bool]={1:True,2:True,3:False}
+	print("dictx[3]=", dictx[3])
+
+	xb = "1ipouou"
+	print("xb:", xb)
+
+    # 测试 sqrt 函数
+    result2: float = math.sqrt(16.0)
+    print("math.sqrt(16.0)=", result2)
+
+	start_time:float = time()
+	elapsed:float = time() - start_time
+	print("elapsed:", elapsed)
+}

@@ -1,0 +1,11 @@
+def main(args:list[str]) {
+    try {
+        print("Starting request...")
+        http_post("http://192.168.255.255:9999/api/chat", json="{\"model\":\"test\"}", timeout=3)
+        print("Request succeeded")
+    }
+    catch e {
+        print("Caught error: " ,str(e))
+    }
+    print("Program ended")
+}

@@ -1,0 +1,39 @@
+# Config 测试文件
+
+def main(args:list[str]) {
+    print("=== Testing Config ===\n")
+
+    # 加载配置文件
+    config:Config = config("examples/test_config.conf")
+
+    # 测试获取字符串值
+    print("--- Test 1: Get string values ---\n")
+    websocket_url:str = config_get(config, "websocket", "url")
+    print("WebSocket URL: ", websocket_url, "\n")
+
+    device_id:str = config_get(config, "websocket", "device_id")
+    print("Device ID: ", device_id, "\n")
+
+    # 测试获取整数值
+    print("\n--- Test 2: Get integer values ---\n")
+    sample_rate:int = config_get_int(config, "recording", "sample_rate", 0)
+    print("Recording sample rate: ", sample_rate, "\n")
+
+    channels:int = config_get_int(config, "recording", "channels", 0)
+    print("Recording channels: ", channels, "\n")
+
+    # 测试获取浮点数值
+    print("\n--- Test 3: Get float values ---\n")
+    duration:float = config_get_float(config, "recording", "duration", 0.0)
+    print("Duration: ", duration, "\n")
+
+    # 测试检查键是否存在
+    print("\n--- Test 4: Check key exists ---\n")
+    has_url:bool = config_has_key(config, "websocket", "url")
+    print("Has 'url' in [websocket]: ", has_url, "\n")
+
+    has_nonexistent:bool = config_has_key(config, "websocket", "nonexistent")
+    print("Has 'nonexistent' in [websocket]: ", has_nonexistent, "\n")
+
+    print("\n=== All Config tests completed ===\n")
+}

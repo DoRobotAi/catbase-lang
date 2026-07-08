@@ -1,0 +1,19 @@
+def main(args:list[str]) {
+    data: dict[str, any] = {"name": "Alice", "age": 30}
+    
+    if "name" in data and data["name"] {
+        print("key exists and value is not empty")
+    }
+    
+    a: bool = True
+    b: bool = False
+    if a and b {
+        print("both true")
+    } else {
+        print("not both true")
+    }
+    
+    if a or b {
+        print("at least one is true")
+    }
+}

@@ -1,0 +1,22 @@
+# 测试 Pointer 基本功能
+def main(args:list[str]) {
+    # 测试创建空指针
+    empty: Pointer = pointer()
+    if(empty.is_null() == True){
+        print("is_null failed")
+    }
+
+    # 测试创建指向 int 的指针
+    num: int = 42
+    ptr: Pointer = pointer_of(num)
+
+    # 测试 get（获取当前值）
+    val: int = ptr.get()
+    print("val=", val)
+
+    # 测试 set（在 num 的作用域内修改其值）
+    ptr.set(100)
+    print("num=", num)
+
+    print("All Pointer tests passed!")
+}

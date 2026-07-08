@@ -1,0 +1,4 @@
+def main(args:list[str]) {
+    # 不传参数，应该报错
+    response:str = http_post()
+}

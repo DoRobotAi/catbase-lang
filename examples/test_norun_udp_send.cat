@@ -1,0 +1,15 @@
+def main(args:list[str]) {
+    print("=== Testing UDP Socket ===\n")
+    
+    # 测试 UDP 发送
+    try {
+        udp:UDPSocket = udpsocket()
+        udp.sendto("Hello UDP!", "127.0.0.1", 9999)
+        print("UDP message sent\n")
+        udp.close()
+        print("UDP send test completed\n")
+    }
+    except err {
+        print("UDP send failed: ", err, "\n")
+    }
+}

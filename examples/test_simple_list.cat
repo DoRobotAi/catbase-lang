@@ -1,0 +1,11 @@
+def main(args:list[str]) {
+    items: list[str] = ["a", "b", "c"]
+    
+    data: dict[str, any] = {
+        "name": "test",
+        "items": items
+    }
+    
+    json_str: str = json_dumps(data)
+    print("JSON:", json_str)
+}

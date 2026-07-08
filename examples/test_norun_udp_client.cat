@@ -1,0 +1,36 @@
+# If you want to test this program, please first execute the following command on your local machine:
+#
+# ./bin/catbasecc ./examples/test_norun_udp_server.cat
+# ./test_norun_udp_server
+#
+
+def main(args:list[str]) {
+    print("=== UDP Client ===\n")
+    
+    try {
+        # 创建 UDP socket 并绑定到客户端端口
+        client:UDPSocket = udpsocket()
+        client.bind("127.0.0.1", 9998)
+        print("UDP Client bound to 127.0.0.1:9998\n")
+        
+        # 发送消息到服务器
+        message:str = "Hello from UDP Client!"
+        print("Sending: ", message, "\n")
+        client.sendto(message, "127.0.0.1", 9999)
+        
+        # 等待接收响应
+        try {
+            response:str = client.recvfrom(1024, 5)
+            print("Server response: ", response, "\n")
+        }
+        except err {
+            print("No response received: ", err, "\n")
+        }
+        
+        client.close()
+        print("UDP Client test completed\n")
+    }
+    except err {
+        print("Client error: ", err, "\n")
+    }
+}

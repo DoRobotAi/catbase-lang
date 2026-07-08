@@ -1,0 +1,21 @@
+# 测试网络功能
+def main(args:list[str]) {
+    print("Testing HTTP GET...")
+    
+    # 测试 HTTP GET 请求
+    response: str = http_get("http://example.com/")
+    print("HTTP Response:")
+    print(response)
+    
+    print("\nTesting TCP Client...")
+    
+    # 测试 TCP 客户端连接到本地服务器
+    # 注意：这个测试需要一个运行中的 TCP 服务器
+    # client: TCPClient = tcp_connect("127.0.0.1", 8080)
+    # client.write("Hello from CatBase!")
+    # data: str = client.read(1024)
+    # print("Received:", data)
+    # client.close()
+    
+    print("Network tests completed!")
+}

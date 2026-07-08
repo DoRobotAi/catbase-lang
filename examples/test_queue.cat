@@ -1,0 +1,49 @@
+# 消息队列测试 - 使用 Python-like API (完整版)
+
+def producer(q:Queue) {
+    i:int = 0
+    while i < 5 {
+        msg:str = str(i * 100)
+        q.put(msg+"str", -1)
+        print("Producer: put ", msg, "\n")
+        i = i + 1
+    }
+}
+
+def consumer(q:Queue) {
+    i:int = 0
+    while i < 5 {
+        if !q.empty() {
+            msg:str = q.get_nowait()
+            print("Consumer: get_nowait ", msg, "\n")
+            q.task_done()
+        } else {
+            print("Consumer: queue is empty, waiting...\n")
+        }
+        sleep(1)
+        i = i + 1
+    }
+}
+
+def main(args:list[str]) {
+    print("Testing Queue (Python-like API - Full)...\n")
+
+    # 创建队列，最大容量 10
+    q:Queue = queue(10)
+
+    print("Queue created, maxsize: 10\n")
+    print("q.empty(): ", q.empty(), "\n")
+    print("q.full(): ", q.full(), "\n")
+    print("q.qsize(): ", q.qsize(), "\n")
+    print("q.get_maxsize(): ", q.get_maxsize(), "\n")
+
+    # 启动生产者和消费者
+    thread producer(q)
+    thread consumer(q)
+
+    # 等待所有任务完成
+    q.join()
+
+    print("\nFinal q.qsize(): ", q.qsize(), "\n")
+    print("Test completed!\n")
+}

@@ -1,0 +1,10 @@
+def main(args:list[str]) {
+    # 测试 http_get 函数
+    try {
+        response:str = http_get("http://dorobot.ai/index.jsp", timeout=6)
+        print(response)
+    }
+    except err{
+        print("HTTP GET failed with error:",err)
+    }
+}

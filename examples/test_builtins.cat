@@ -1,0 +1,50 @@
+# 测试所有内置函数
+def main(args:list[str]) {
+    # 测试数学函数
+    print("\n=== 测试数学函数 ===")
+    print("abs(-42) =", abs(-42))
+    print("max(10, 20) =", max(10, 20))
+    print("min(10, 20) =", min(10, 20))
+    print("pow(2, 10) =", pow(2, 10))
+    print("round(3.14159) =", round(3.14159))
+    
+    # 测试类型转换函数
+    print("\n=== 测试类型转换函数 ===")
+    print("int(42.5) =", int(42.5))
+    print("float(42) =", float(42))
+    print("str(42) =", str(42))
+    print("bool(0) =", bool(0))
+    print("bool(1) =", bool(1))
+    
+    # 测试进制转换函数
+    print("\n=== 测试进制转换函数 ===")
+    print("bin(42) =", bin(42))
+    print("oct(42) =", oct(42))
+    print("hex(42) =", hex(42))
+    
+    # 测试字符转换函数
+    print("\n=== 测试字符转换函数 ===")
+    print("chr(65) =", chr(65))
+    print("ord(\"A\") =", ord("A"))
+    
+    # 测试列表函数
+    print("\n=== 测试列表函数 ===")
+    arr:list[int] = [1, 2, 3, 4, 5]
+    print("sum([1,2,3,4,5]) =", sum(arr))
+    print("len([1,2,3,4,5]) =", len(arr))
+    
+    # 测试文件操作
+    print("\n=== 测试文件操作 ===")
+    f:File = file("test.txt", "w")
+    f.write("Hello, CatBase!")
+    f.close()
+    
+    f = file("test.txt", "r")
+    content:str = f.read()
+    print("文件内容:", content)
+    f.close()
+    
+    print("\n=== 所有测试完成 ===")
+    s:str="123456789"
+    print(len(s))
+}

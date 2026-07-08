@@ -1,0 +1,23 @@
+def main(args:list[str]) {
+    print("=== Test nested try-catch ===\n")
+    
+    try {
+        print("Outer try block\n")
+        
+        try {
+            print("Inner try block\n")
+            temp:int = 1 / 0
+            print(temp)
+        }
+        except inner_err {
+            print("Inner except: ", inner_err, "\n")
+        }
+        
+        print("After inner try-catch\n")
+    }
+    except outer_err {
+        print("Outer except: ", outer_err, "\n")
+    }
+    
+    print("Test completed\n")
+}

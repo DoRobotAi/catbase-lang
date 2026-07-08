@@ -1,0 +1,31 @@
+# 测试显式类型声明
+def main(args:list[str]) {
+    # 正确：显式声明类型
+    x: int = 10
+    y: float = 3.14
+    z: str = "hello"
+    b: bool = True
+    
+    # 正确：显式声明 list 类型
+    int_list: list[int] = [1, 2, 3]
+    str_list: list[str] = ["a", "b", "c"]
+    
+    # 正确：显式声明 dict 类型
+    my_dict: dict[str, int] = {"a": 1, "b": 2}
+    bool_dict: dict[int, bool] = {1: True, 2: False}
+    
+    # 错误：隐式声明（应该报错）
+    # implicit_var = 42
+    # implicit_list = [1, 2, 3]
+    # implicit_dict = {"key": "value"}
+    
+    print(x)
+    print(y)
+    print(z)
+    print(b)
+    print(int_list)
+    print(str_list)
+    print(my_dict)
+    print(bool_dict)
+    print("All explicit declarations passed!")
+}

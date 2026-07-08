@@ -1,0 +1,13 @@
+# 测试隐式类型声明（应该报错）
+def main(args:list[str]) {
+    # 错误：隐式声明变量
+    implicit_var = 42
+    
+    # 错误：隐式声明 list
+    implicit_list = [1, 2, 3]
+    
+    # 错误：隐式声明 dict
+    implicit_dict = {"key": "value"}
+    
+    print("This should not print")
+}

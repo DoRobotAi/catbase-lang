@@ -1,0 +1,18 @@
+# If you want to test this program, please first execute the following command on your local machine:
+#
+# cd ./other/post_server
+# python ./post_server.py
+#
+
+def main(args:list[str]) {
+    url:str = "http://localhost:8000"
+    
+    # json 有值，data 也有值，验证 json 优先
+    json_data:dict[str,any] = {"name": "test_json"}
+    data:str = "form_field=should_be_ignored"
+    
+    response:Response = http_post(url, "", json_data, data, 30)
+    print("=== Test: json has value, data should be ignored ===")
+    print(response.status_code)
+    print(response.body)
+}

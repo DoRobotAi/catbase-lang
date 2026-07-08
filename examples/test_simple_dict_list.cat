@@ -1,0 +1,19 @@
+def main(args:list[str]) {
+    prompt: str = "hello"
+    
+    messages: list[dict[str, str]] = [
+        {"role": "system", "content": "hello"}, 
+        {"role": "user", "content": prompt}
+    ]
+    
+    data: dict[str, any] = {
+        "model": "test-model",
+        "messages": messages,
+        "max_tokens": 1000
+    }
+    
+    json_str: str = json_dumps(data)
+    print("JSON:", json_str)
+    print("prompt:", prompt)
+    print("messages:", messages)
+}

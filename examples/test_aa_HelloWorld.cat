@@ -1,0 +1,3 @@
+def main(args:list[str]){
+    print("Hello world!")
+}

@@ -1,0 +1,9 @@
+def main(args:list[str]) {
+    # 测试 open 只传 path
+    f:File = file("test.txt")
+    print(f)
+    
+    # 测试 open 传 path 和 mode
+    f2:File = file("test.txt", "r")
+    print(f2)
+}

@@ -1,0 +1,5 @@
+def main(args:list[str]) {
+    # 测试 open 传 0 个参数（最少 1 个）
+    f:File = file()
+    print(f)
+}

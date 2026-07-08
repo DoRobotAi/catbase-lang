@@ -1,0 +1,30 @@
+# 时间函数测试
+def main(args:list[str]) {
+    print("=== Time Functions Test ===\n")
+    
+    # 测试 time()
+    t:float = time()
+    print("time() = ")
+    print(t)
+    print("\n")
+    
+    # 测试 strftime()
+    s:str = strftime("%Y-%m-%d %H:%M:%S")
+    print("strftime() = ")
+    print(s)
+    print("\n")
+    
+    # 测试 perf_counter()
+    start:float = perf_counter()
+    # 简单延时
+    sleep(0.1)
+    end:float = perf_counter()
+    print("perf_counter() = ")
+    print(end)
+    print("\n")
+    print("Elapsed (ns) = ")
+    print(end - start)
+    print("\n")
+    
+    print("=== All tests passed ===\n")
+}

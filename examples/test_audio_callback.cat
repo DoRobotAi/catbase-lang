@@ -1,0 +1,82 @@
+# 音频回调机制测试示例
+# 使用 Queue 实现录音到播放的数据流转
+
+# 创建队列用于存储录音数据
+audio_queue: Queue = queue(1000)
+
+# 录音回调函数 - 当有新的音频数据时被调用
+def on_audio_data(data:bytes) {
+    audio_queue.put(data, -1)
+}
+
+# 播放回调函数 - 当音频设备需要数据时被调用
+def get_audio_data() -> bytes {
+    if !audio_queue.empty() {
+        frame:bytes = audio_queue.get_nowait()
+        return frame
+    }
+    return bytes("")
+}
+
+def main(args:list[str]) {
+    print("Testing audio callback with queue...")
+    
+    # 检查音频设备是否存在
+    input_devices:list[dict[str, str]] = getInputDeviceList()
+    output_devices:list[dict[str, str]] = getOutputDeviceList()
+    
+    if len(input_devices) == 0 {
+        print("No input devices found, skipping test...\n")
+        return
+    }
+    
+    if len(output_devices) == 0 {
+        print("No output devices found, skipping test...\n")
+        return
+    }
+    
+    # 测试录音回调
+    print("\n=== Recording with callback ===")
+    try {
+        rec_stream: RecordStream = recordStream(
+            rate=16000, 
+            channels=1, 
+            chunk=512, 
+            format=3, 
+            device_name="plughw:CARD=3,DEV=0", 
+            callback=on_audio_data
+        )
+        rec_stream.startRecording()
+        print("Recording started (3 seconds)...")
+        sleep(3)
+        rec_stream.stopRecording()
+        rec_stream.close()
+        print("Recording stopped, queue size: ", audio_queue.qsize())
+    }
+    except {
+        print("Recording error")
+    }
+    
+    # 测试播放回调
+    print("\n=== Playback with callback ===")
+    try {
+        pstream: PlayStream = playStream(
+            rate=16000, 
+            channels=1, 
+            format=3, 
+            device_name="plughw:CARD=1,DEV=0", 
+            callback=get_audio_data
+        )
+        pstream.startPlaying()
+        print("Playback started...")
+        sleep(3)
+        pstream.stopPlaying()
+        pstream.close()
+        print("Playback stopped")
+    }
+    except {
+        print("Playback error")
+    }
+    
+    print("\nAudio callback test completed")
+}

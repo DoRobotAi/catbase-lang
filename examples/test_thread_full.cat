@@ -1,0 +1,26 @@
+def worker(id:int) {
+    print("Worker ", id, " started")
+}
+
+def main(args:list[str]) {
+    print("Testing thread and join...")
+    
+    thread worker(1)
+    print("Spawned worker 1")
+    
+    thread worker(2)
+    print("Spawned worker 2")
+    
+    print("Waiting for workers...")
+    thread_join()
+    print("Worker joined")
+    
+    print("\nTesting Mutex...")
+    m:Mutex = mutex()
+    m.lock()
+    print("Mutex locked")
+    m.unlock()
+    print("Mutex unlocked")
+    
+    print("\nAll tests passed!")
+}

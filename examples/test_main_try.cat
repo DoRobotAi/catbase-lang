@@ -1,0 +1,7 @@
+def main(args:list[str]) {
+    try {
+        print("hello from try")
+    }
+    catch e {
+    }
+}

@@ -1,0 +1,22 @@
+# If you want to test this program, please first execute the following command on your local machine:
+#
+# cd ./other/post_server
+# python ./post_server.py
+#
+
+def main(args:list[str]) {
+    url:str = "http://localhost:8000"
+    headers:str = ""
+    data:dict[str,any] = {"username": "admin", "password": "123456"}
+    body:str = ""
+    timeout:int = 30
+    stream:bool = False
+    
+    response:Response = http_post(url, headers, data, body, timeout, stream)
+    print("Response status: ")
+    print(response.status_code)
+    print("\n")
+    print("Response body: ")
+    print(response.body)
+    print("\n")
+}

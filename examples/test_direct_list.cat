@@ -1,0 +1,11 @@
+def main(args:list[str]) {
+    # 直接创建 list[dict[str, str]] 并打印
+    messages: list[dict[str, str]] = [
+        {"role": "system", "content": "你好"}
+    ]
+    print("messages:", messages)
+    
+    # 打印单个字符串
+    s: str = "你好"
+    print("s:", s)
+}

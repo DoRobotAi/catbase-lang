@@ -1,0 +1,14 @@
+import "/usr/lib/x86_64-linux-gnu/libm.so" as math
+#import "/usr/lib/aarch64-linux-gnu/libm.so" as math
+
+# 声明外部函数
+from math import sqrt(x: float) -> float
+from math import sin(x: float) -> float
+
+def main(args:list[str]) {
+    result1: float = math.sqrt(16.0)
+    print("sqrt(16) = ", result1)
+    
+    result2: float = math.sin(3.14159 / 2.0)
+    print("sin(pi/2) = ", result2)
+}

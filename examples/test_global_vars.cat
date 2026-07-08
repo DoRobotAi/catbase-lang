@@ -1,0 +1,12 @@
+# Test global variables
+MY_NAME: str = "CatBase"
+MY_VERSION: int = 1
+MY_PI: float = 3.14
+IS_ACTIVE: bool = true
+
+def main(args: list[str]) {
+    print("Name: ",MY_NAME)
+    print("Version: ",MY_VERSION)
+    print("PI: ",MY_PI)
+    print("Active: ",IS_ACTIVE)
+}

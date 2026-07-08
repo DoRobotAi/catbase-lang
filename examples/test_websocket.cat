@@ -1,0 +1,30 @@
+# If you want to test this program, please first execute the following command on your local machine:
+#
+# cd ./other/websock_server
+# python ./websock_server.py
+#
+
+
+def main(args:list[str]) {
+    url: str = "ws://127.0.0.1:28080"
+    headers: dict[str,str] = 
+    {
+         "Authorization": "Bearer test_token", 
+         "Device-Id": "device123"
+    }
+    client: WebSocket = websocket(url, headers)
+    print("Connected to WebSocket server\n")
+    
+    # 发送字符串需要先转换为 bytes
+    client.send(bytes("Hello from CatBase!"))
+    print("Sent: Hello from CatBase!\n")
+    
+    # 接收到的 bytes 需要转换为 str 才能打印
+    response:bytes = client.recv()
+    print("Received: ")
+    print(str(response))
+    print("\n")
+    
+    client.close()
+    print("Connection closed.\n")
+}

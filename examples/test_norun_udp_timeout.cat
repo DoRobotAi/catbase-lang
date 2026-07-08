@@ -1,0 +1,22 @@
+def main(args:list[str]) {
+    print("=== Testing UDP Recvfrom Timeout ===\n")
+    
+    # 测试 UDP 接收超时
+    try {
+        udp:UDPSocket = udpsocket()
+        udp.bind("127.0.0.1", 9999)
+        print("UDP socket bound to 127.0.0.1:9999\n")
+        
+        # 尝试接收数据，设置 3 秒超时
+        data:str = udp.recvfrom(1024, 3)
+        print("Received: ", data, "\n")
+        udp.close()
+    }
+    except err {
+        print("UDP recvfrom timeout correctly caught: ")
+        print(err)
+        print("\n")
+    }
+    
+    print("\n=== UDP Recvfrom Timeout Test Completed ===\n")
+}

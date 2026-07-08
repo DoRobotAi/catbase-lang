@@ -1,0 +1,9 @@
+def main(args:list[str]) {
+    # 测试简单字符串
+    d: dict[str, any] = {
+        "key1": "hello",
+        "key2": "world"
+    }
+    json_str: str = json_dumps(d)
+    print("Simple:", json_str)
+}

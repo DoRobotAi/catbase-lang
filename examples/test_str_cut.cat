@@ -1,0 +1,34 @@
+def main(args:list[str]) {
+    s:str = "Hello, World!"
+
+    print("s: ", s, "\n")
+
+    # 完整切片：s[0:5] - 从索引 0 到 5（不包括 5）
+    s1:str = s[0:5]
+    print("s[0:5]: ", s1, "\n")
+
+    # 后缀切片：s[7:] - 从索引 7 到末尾
+    s2:str = s[7:]
+    print("s[7:]: ", s2, "\n")
+
+    # 前缀切片：s[:5] - 从开头到索引 5（不包括 5）
+    s3:str = s[:5]
+    print("s[:5]: ", s3, "\n")
+
+    # 整个字符串拷贝：s[:]
+    s4:str = s[:]
+    print("s[:]: ", s4, "\n")
+
+    # 中间切片组合：s[0:5] + s[7:] 组合
+    s5:str = s[0:5] + s[7:]
+    print("s[0:5] + s[7:]: ", s5, "\n")
+
+    # 列表切片
+    arr:list[int] = [1, 2, 3, 4, 5]
+    arr1:list[int] = arr[1:3]
+    arr2:list[int] = arr[2:]
+    arr3:list[int] = arr[:3]
+    print("arr[1:3]: ", arr1, "\n")
+    print("arr[2:]: ", arr2, "\n")
+    print("arr[:3]: ", arr3, "\n")
+}

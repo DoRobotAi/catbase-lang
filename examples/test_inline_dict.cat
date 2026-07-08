@@ -1,0 +1,13 @@
+def main(args:list[str]) {
+    prompt: str = "你好"
+    
+    # 直接在 list 中定义 dict
+    messages: list[dict[str, str]] = [
+        {"role": "system", "content": "直接回答问题"},
+        {"role": "user", "content": prompt}
+    ]
+    
+    # 测试 json_dumps
+    json_str: str = json_dumps(messages)
+    print("JSON:", json_str)
+}

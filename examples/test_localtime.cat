@@ -1,0 +1,42 @@
+# 测试时间函数
+
+def main(args:list[str]) {
+    print("=== Time Functions Test ===\n")
+    
+    # 测试 time()
+    t:float = time()
+    print("time() = ",t)
+    
+    # 测试 strftime()
+    s:str = strftime("%Y-%m-%d %H:%M:%S")
+    print("strftime() = ",s)
+    
+    # 测试 perf_counter()
+    start:float = perf_counter()
+    sleep(0.1)
+    end:float = perf_counter()
+    print("perf_counter() = ",end)
+    print("Elapsed (ns) = ",end - start)
+    
+    # 测试 localtime() - 返回本地时间结构体
+    lt:TimeStruct = localtime()
+    print("localtime() = ",lt)
+    
+    # 测试 gmtime() - 返回 UTC 时间结构体
+    gt:TimeStruct = gmtime()
+    print("gmtime() = ",gt)
+
+    # 测试 timestamp_to_struct() - 将时间戳转换为 TimeStruct
+    ts:TimeStruct = timestamp_to_struct(t)
+    print("timestamp_to_struct(time()) = ",ts)
+    
+    # 测试 strftime_timestamp() - 将时间戳按格式转换为字符串
+    s2:str = strftime_timestamp(t, "%Y-%m-%d %H:%M:%S")
+    print("strftime_timestamp(time(), format) = ",s2)
+
+    # 测试 mktime() - 将 TimeStruct 转换为时间戳
+    ts2:float = mktime(lt)
+    print("mktime(TimeStruct) = ",ts2)
+
+    print("=== All tests passed ===\n")
+}

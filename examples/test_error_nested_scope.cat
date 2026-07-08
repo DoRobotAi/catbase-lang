@@ -1,0 +1,12 @@
+import "/usr/lib/aarch64-linux-gnu/libm.so" as math
+
+from math import sqrt(x:float) -> float
+
+def test() {
+    start_time:float = time()
+    elapsed:float = time() - start_time
+    print("elapsed:", elapsed)
+    tokens_per_sec:float = (float(100) / elapsed)*1000
+    print(tokens_per_sec)
+    return
+}

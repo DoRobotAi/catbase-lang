@@ -1,0 +1,106 @@
+def main(args:list[str]) {
+    prompt: str = "你好"
+    max_tokens: int = 1000
+    temperature: float = 0.1
+    base_url: str = "http://101.126.158.204:19090/v1"
+    model_path: str = "/home/dorobot/vllm_Worksp/models/s_qwen3.5-9b-AWQ-4bit"
+    url: str = base_url + "/chat/completions"
+
+    # 定义 messages
+    messages: list[dict[str, str]] = [
+        {
+            "role": "system", 
+            "content": "直接回答问题，不要有任何思考过程。"
+        }, 
+        {"role": "user", "content": prompt}
+    ]
+    
+    # 使用 dict[str, any] 存储简单类型
+    data: dict[str, any] = {
+        "model": model_path, 
+        "messages": messages, 
+        "max_tokens": max_tokens, 
+        "temperature": temperature, 
+        "top_p": 0.9,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0.5,        
+        "stream": True
+    }
+    
+    try{
+      # 记录开始时间
+
+      token_count:int = 0
+      first:bool=True
+      start_time:float = time()
+
+      response:Response = http_post(url, json=data, stream=True, timeout=60)
+      response.raise_for_status()
+
+      buffer: str = ""
+
+      for line in response.iter_lines() {
+            if line {
+                if line.startswith("data: ") {
+                    if first==True{
+                       
+                       print(time()-start_time,'ms')
+                       first=False
+                    }
+                    if line == "data: [DONE]" {
+                        if buffer != "" {
+                            print(buffer, end="", flush=True)
+                            buffer = ""
+                        }
+                        # 计算并显示统计信息
+                        print(time()-start_time,'ms')
+                        elapsed:float = time() - start_time
+                        tokens_per_sec:float = (float(token_count) / elapsed)*1000
+                        print("\nTokens: ", token_count, ", Time: ", round(elapsed,2), "ms, Speed: ", round(tokens_per_sec,2),  " tokens/s\n")
+                        return
+                    }
+                    # 提取 data: 后的内容并打印
+                    data_json:str = line[6:]
+                    /*
+                    //收到的data格式：
+                    {
+                        "id":"chatcmpl-a2dc454dac482d17",
+                        "object":"chat.completion.chunk",
+                        "created":1780631596,
+                        "model":"/home/dorobot/vllm_Worksp/models/s_qwen3.5-9b-AWQ-4bit",
+                        "choices":
+                        [
+                            {
+                                "index":0,
+                                "delta":{"content":"坚持"},
+                                "logprobs":null,
+                                "finish_reason":null,"token_ids":null
+                            }
+                        ]
+                    }
+                    */
+
+                    data_dict:dict[str, any] = json_loads(data_json)
+                    if "choices" in data_dict and data_dict["choices"]{
+                        delta:dict[str, any] = data_dict["choices"][0].get("delta", {})
+                        content:str = delta.get("content", "")
+                        content_str:str=str(content)
+                        # 统计 token 数量
+                        token_count = token_count + 1
+                        print(content_str, end="", flush=True)
+                    }
+                }
+            }
+      }
+    }
+    except err{
+        print(err)
+    }
+
+    # 使用这些变量以避免警告
+    #print("url:", url)    
+    #print("model:", model_path)
+    #print("max_tokens:", max_tokens)
+    #print("temperature:", temperature)
+    #print("messages:", messages)
+}

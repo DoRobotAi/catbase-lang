@@ -1,0 +1,36 @@
+# If you want to test this program, please first execute the following command on your local machine:
+#
+# cd ./other/post_server
+# python ./post_server.py
+#
+
+def main(args:list[str]) {
+    print("Starting http_post test\n")
+    
+    /*
+    curl -X POST http://localhost:8000 \
+    -H "Content-Type: application/json" \
+    -d '{"name": "张三", "age": 30, "city": "北京"}'
+    */
+
+    url:str = "http://localhost:8000"
+    data:dict[str, any] = {
+        "test": "value",
+        "number": 42
+    }
+    
+    print("Making POST request to: ")
+    print(url)
+    print("\n")
+    
+    response:Response = http_post(url, json=data)
+    print("Response status: ")
+    print(response.status_code)
+    print("\n")
+    
+    print("Response body length: ")
+    print(len(response.body))
+    print("\n")
+    
+    print("Test completed\n")
+}

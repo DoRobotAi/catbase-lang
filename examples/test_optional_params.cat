@@ -1,0 +1,9 @@
+def greet(name:str, greeting:str = "Hello") {
+    print(greeting + " " + name)
+}
+
+def main(args:list[str]) {
+    greet("World")
+    greet("World", "Hi")
+    greet("World", greeting="Good morning")
+}

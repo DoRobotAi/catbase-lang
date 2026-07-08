@@ -1,0 +1,30 @@
+# If you want to test this program, please first execute the following command on your local machine:
+#
+# ./bin/catbasecc ./examples/test_norun_tcp_server.cat
+# ./test_norun_tcp_server
+#
+
+
+def main(args:list[str]) {
+    print("=== Testing TCP Client ===\n")
+    
+    # 测试 TCP 客户端连接到本地服务器
+    try {
+        sock:TCPSocket = tcpsocket()
+        sock.connect("127.0.0.1", 8888)
+        print("TCP connection established\n")
+        
+        # 发送数据
+        sock.write("Hello from TCP Client!\n")
+        
+        # 接收响应
+        response:str = sock.read(4096)
+        print("Received from server: ", response, "\n")
+        
+        sock.close()
+        print("TCP client test completed\n")
+    }
+    except err {
+        print("TCP client failed: ", err, "\n")
+    }
+}

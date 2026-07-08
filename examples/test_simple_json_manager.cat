@@ -1,0 +1,657 @@
+# ===========================================================================
+# JSON 图数据管理器 (CatBase 版本)
+# 策略: 拆分函数 + for-range循环 + try/except键检查 + 简单返回类型
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 键存在检查 (用 try/except, 避免 in 运算符在嵌套 dict 上的 Zig bug)
+# ---------------------------------------------------------------------------
+
+def _key_exists(d: dict[str, any], key: str) -> bool {
+    try {
+        d[key]
+        return True
+    }
+    except {
+        return False
+    }
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 创建空数据结构 (简单返回类型, 单 return)
+# ---------------------------------------------------------------------------
+
+def _make_data() -> dict[str, any] {
+    data: dict[str, any] = {
+        "nodes": [],
+        "links": [],
+        "node_index": {},
+        "label_index": {},
+        "out_links": {},
+        "in_links": {}
+    }
+    return data
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 深拷贝 dict (JSON 往返)
+# ---------------------------------------------------------------------------
+
+def _copy_dict(src: dict[str, any]) -> dict[str, any] {
+    return json_loads(json_dumps(src))
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 过滤链接列表
+# ---------------------------------------------------------------------------
+
+def _filter_links(data: dict[str, any], skip_src: int, skip_tgt: int) {
+    new_links: list[any] = []
+    for i in range(0, len(data["links"])) {
+        s: int = int(str(data["links"][i].get("source", 0)))
+        t: int = int(str(data["links"][i].get("target", 0)))
+        if s == skip_src {
+            if t == skip_tgt {
+            } else {
+                new_links.append(data["links"][i])
+            }
+        } else {
+            new_links.append(data["links"][i])
+        }
+    }
+    data["links"] = new_links
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 构建标签索引 (无返回类型, 复杂控制流)
+# ---------------------------------------------------------------------------
+
+def _build_label_index(data: dict[str, any], node_id: int, label: str) {
+    if label == "" {
+        return
+    }
+    lower: str = label.lower()
+    i: int = 0
+    while i < len(lower) {
+        end_j: int = i + 11
+        if end_j > len(lower) + 1 {
+            end_j = len(lower) + 1
+        }
+        j: int = i + 1
+        while j < end_j {
+            sub: str = lower[i:j]
+            if _key_exists(data["label_index"], sub) == False {
+                data["label_index"][sub] = []
+            }
+            arr: list[int] = data["label_index"][sub]
+            dup: int = 0
+            for k in range(0, len(arr)) {
+                if arr[k] == node_id {
+                    dup = 1
+                }
+            }
+            if dup == 0 {
+                arr.append(node_id)
+            }
+            j = j + 1
+        }
+        i = i + 1
+    }
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 清除标签索引
+# ---------------------------------------------------------------------------
+
+def _clear_label_index(data: dict[str, any], node_id: int, label: str) {
+    if label == "" {
+        return
+    }
+    lower: str = label.lower()
+    i: int = 0
+    while i < len(lower) {
+        end_j: int = i + 11
+        if end_j > len(lower) + 1 {
+            end_j = len(lower) + 1
+        }
+        j: int = i + 1
+        while j < end_j {
+            sub: str = lower[i:j]
+            if _key_exists(data["label_index"], sub) {
+                old_arr: list[int] = data["label_index"][sub]
+                new_arr: list[int] = []
+                for k in range(0, len(old_arr)) {
+                    if old_arr[k] != node_id {
+                        new_arr.append(old_arr[k])
+                    }
+                }
+                if len(new_arr) > 0 {
+                    data["label_index"][sub] = new_arr
+                }
+                if len(new_arr) == 0 {
+                    data["label_index"][sub] = []
+                }
+            }
+            j = j + 1
+        }
+        i = i + 1
+    }
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 添加链接索引
+# ---------------------------------------------------------------------------
+
+def _add_link_index(data: dict[str, any], src: int, tgt: int) {
+    src_s: str = str(src)
+    tgt_s: str = str(tgt)
+    if _key_exists(data["out_links"], src_s) == False {
+        data["out_links"][src_s] = []
+    }
+    data["out_links"][src_s].append(tgt)
+    if _key_exists(data["in_links"], tgt_s) == False {
+        data["in_links"][tgt_s] = []
+    }
+    data["in_links"][tgt_s].append(src)
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 移除链接索引
+# ---------------------------------------------------------------------------
+
+def _remove_link_index(data: dict[str, any], src: int, tgt: int) {
+    src_s: str = str(src)
+    tgt_s: str = str(tgt)
+    old_arr: list[int] = []
+    new_arr: list[int] = []
+
+    if _key_exists(data["out_links"], src_s) {
+        old_arr = data["out_links"][src_s]
+        new_arr = []
+        for i in range(0, len(old_arr)) {
+            if old_arr[i] != tgt {
+                new_arr.append(old_arr[i])
+            }
+        }
+        data["out_links"][src_s] = new_arr
+    }
+
+    if _key_exists(data["in_links"], tgt_s) {
+        old_arr = data["in_links"][tgt_s]
+        new_arr = []
+        for i in range(0, len(old_arr)) {
+            if old_arr[i] != src {
+                new_arr.append(old_arr[i])
+            }
+        }
+        data["in_links"][tgt_s] = new_arr
+    }
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 从 JSON 加载节点 (无返回类型, 拆分出来避免嵌套过深)
+# ---------------------------------------------------------------------------
+
+def _load_nodes(data: dict[str, any], raw: dict[str, any]) {
+    node_arr: list[any] = []
+    try {
+        node_arr = raw["nodes"]
+    }
+    except {
+        return
+    }
+    for i in range(0, len(node_arr)) {
+        node: dict[str, any] = node_arr[i]
+        nid: int = int(str(node.get("id", 0)))
+        if nid != 0 {
+            node["id"] = nid
+            data["nodes"].append(node)
+            data["node_index"][str(nid)] = node
+            _build_label_index(data, nid, str(node.get("label", "")))
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 从 JSON 加载链接 (无返回类型)
+# ---------------------------------------------------------------------------
+
+def _load_links(data: dict[str, any], raw: dict[str, any]) {
+    link_arr: list[any] = []
+    try {
+        link_arr = raw["links"]
+    }
+    except {
+        return
+    }
+    for i in range(0, len(link_arr)) {
+        link: dict[str, any] = link_arr[i]
+        src: int = int(str(link.get("source", 0)))
+        tgt: int = int(str(link.get("target", 0)))
+        if src != 0 {
+            if tgt != 0 {
+                src_s: str = str(src)
+                tgt_s: str = str(tgt)
+                if _key_exists(data["node_index"], src_s) {
+                    if _key_exists(data["node_index"], tgt_s) {
+                        data["links"].append(link)
+                        _add_link_index(data, src, tgt)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 填充数据 (无返回类型, 避免返回路径检查)
+# ---------------------------------------------------------------------------
+
+def _fill_data(filepath: str, data: dict[str, any]) {
+    f: File = file(filepath, "r")
+    content: str = f.read()
+    f.close()
+    if content == "" {
+        return
+    }
+    raw: dict[str, any] = json_loads(content)
+    _load_nodes(data, raw)
+    _load_links(data, raw)
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 保存数据到文件
+# ---------------------------------------------------------------------------
+
+def _save_data(filepath: str, data: dict[str, any]) {
+    payload: dict[str, any] = {
+        "nodes": data["nodes"],
+        "links": data["links"]
+    }
+    json_str: str = json_dumps(payload)
+    f: File = file(filepath, "w")
+    f.write(json_str)
+    f.close()
+}
+
+
+# ---------------------------------------------------------------------------
+# 内部辅助 - 邻居查询实现
+# ---------------------------------------------------------------------------
+
+def _get_neighbors_impl(data: dict[str, any], nid: int, direction: str) {
+    nid_s: str = str(nid)
+    node_info: dict[str, any] = data["node_index"][nid_s]
+
+    out_ids: list[int] = []
+    in_ids: list[int] = []
+    out_nodes: list[dict[str, any]] = []
+    in_nodes: list[dict[str, any]] = []
+    all_nodes: list[dict[str, any]] = []
+    id_s: str = ""
+    nd: dict[str, any] = {}
+    in_both: int = 0
+    already: int = 0
+    j: int = 0
+
+    if direction == "out" {
+        if _key_exists(data["out_links"], nid_s) {
+            out_ids = data["out_links"][nid_s]
+        }
+    }
+    if direction == "in" {
+        if _key_exists(data["in_links"], nid_s) {
+            in_ids = data["in_links"][nid_s]
+        }
+    }
+    if direction == "both" {
+        if _key_exists(data["out_links"], nid_s) {
+            out_ids = data["out_links"][nid_s]
+        }
+        if _key_exists(data["in_links"], nid_s) {
+            in_ids = data["in_links"][nid_s]
+        }
+    }
+
+    for idx in range(0, len(out_ids)) {
+        id_s = str(out_ids[idx])
+        if _key_exists(data["node_index"], id_s) {
+            out_nodes.append(data["node_index"][id_s])
+        }
+    }
+
+    for idx in range(0, len(in_ids)) {
+        id_s = str(in_ids[idx])
+        if _key_exists(data["node_index"], id_s) {
+            in_nodes.append(data["node_index"][id_s])
+        }
+    }
+
+    for idx in range(0, len(out_ids)) {
+        id_s = str(out_ids[idx])
+        if _key_exists(data["node_index"], id_s) {
+            nd = _copy_dict(data["node_index"][id_s])
+            in_both = 0
+            for j in range(0, len(in_ids)) {
+                if in_ids[j] == out_ids[idx] {
+                    in_both = 1
+                }
+            }
+            if in_both == 1 {
+                nd["_relation"] = "both"
+            } else {
+                nd["_relation"] = "out"
+            }
+            all_nodes.append(nd)
+        }
+    }
+
+    for idx in range(0, len(in_ids)) {
+        already = 0
+        for j in range(0, len(all_nodes)) {
+            if int(str(all_nodes[j].get("id", 0))) == in_ids[idx] {
+                already = 1
+            }
+        }
+        if already == 0 {
+            id_s = str(in_ids[idx])
+            if _key_exists(data["node_index"], id_s) {
+                nd = _copy_dict(data["node_index"][id_s])
+                nd["_relation"] = "in"
+                all_nodes.append(nd)
+            }
+        }
+    }
+
+    ret: dict[str, any] = {
+        "node_id": nid,
+        "node_info": node_info,
+        "direction": direction,
+        "out_nodes": out_nodes,
+        "in_nodes": in_nodes,
+        "all_nodes": all_nodes,
+        "out_count": len(out_nodes),
+        "in_count": len(in_nodes),
+        "total_count": len(all_nodes)
+    }
+    print(json_dumps(ret))
+}
+
+
+# ===========================================================================
+# 公共 API - int 参数 + print() 输出 JSON
+# ===========================================================================
+
+def add_node(filepath: str, nid: int, label: str, desc: str, ntype: str) {
+    if nid == 0 {
+        print("null")
+        return
+    }
+    data: dict[str, any] = _make_data()
+    _fill_data(filepath, data)
+    nid_s: str = str(nid)
+    if _key_exists(data["node_index"], nid_s) == False {
+        new_node: dict[str, any] = {}
+        new_node["id"] = nid
+        new_node["label"] = label
+        new_node["desc"] = desc
+        new_node["type"] = ntype
+        data["nodes"].append(new_node)
+        data["node_index"][nid_s] = new_node
+        _build_label_index(data, nid, label)
+        _save_data(filepath, data)
+        print(json_dumps(new_node))
+        return
+    }
+    print("null")
+}
+
+
+def get_node(filepath: str, nid: int) {
+    if nid == 0 {
+        print("null")
+        return
+    }
+    data: dict[str, any] = _make_data()
+    _fill_data(filepath, data)
+    nid_s: str = str(nid)
+    if _key_exists(data["node_index"], nid_s) {
+        print(json_dumps(data["node_index"][nid_s]))
+        return
+    }
+    print("null")
+}
+
+
+def add_link(filepath: str, src: int, tgt: int) {
+    if src == 0 {
+        print("null")
+        return
+    }
+    if tgt == 0 {
+        print("null")
+        return
+    }
+    if src == tgt {
+        print("null")
+        return
+    }
+    data: dict[str, any] = _make_data()
+    _fill_data(filepath, data)
+    src_s: str = str(src)
+    tgt_s: str = str(tgt)
+    if _key_exists(data["node_index"], src_s) {
+        if _key_exists(data["node_index"], tgt_s) {
+            dup: int = 0
+            if _key_exists(data["out_links"], src_s) {
+                arr: list[int] = data["out_links"][src_s]
+                for i in range(0, len(arr)) {
+                    if arr[i] == tgt {
+                        dup = 1
+                    }
+                }
+            }
+            if dup == 0 {
+                link: dict[str, int] = {"source": src, "target": tgt}
+                data["links"].append(link)
+                _add_link_index(data, src, tgt)
+                _save_data(filepath, data)
+                print(json_dumps(link))
+                return
+            }
+        }
+    }
+    print("null")
+}
+
+
+def get_neighbors(filepath: str, nid: int, direction: str) {
+    if nid == 0 {
+        print("null")
+        return
+    }
+    if direction != "out" {
+        if direction != "in" {
+            if direction != "both" {
+                print("null")
+                return
+            }
+        }
+    }
+    data: dict[str, any] = _make_data()
+    _fill_data(filepath, data)
+    _get_neighbors_impl(data, nid, direction)
+}
+
+
+def delete_node(filepath: str, nid: int) {
+    if nid == 0 {
+        print("null")
+        return
+    }
+    data: dict[str, any] = _make_data()
+    _fill_data(filepath, data)
+    nid_s: str = str(nid)
+
+    if _key_exists(data["node_index"], nid_s) == False {
+        print("null")
+        return
+    }
+
+    if _key_exists(data["out_links"], nid_s) {
+        out_arr: list[int] = data["out_links"][nid_s]
+        for i in range(0, len(out_arr)) {
+            _filter_links(data, nid, out_arr[i])
+            _remove_link_index(data, nid, out_arr[i])
+        }
+    }
+
+    if _key_exists(data["in_links"], nid_s) {
+        in_arr: list[int] = data["in_links"][nid_s]
+        for i in range(0, len(in_arr)) {
+            _filter_links(data, in_arr[i], nid)
+            _remove_link_index(data, in_arr[i], nid)
+        }
+    }
+
+    new_nodes: list[any] = []
+    for i in range(0, len(data["nodes"])) {
+        if int(str(data["nodes"][i].get("id", 0))) != nid {
+            new_nodes.append(data["nodes"][i])
+        }
+    }
+    data["nodes"] = new_nodes
+
+    node: dict[str, any] = data["node_index"][nid_s]
+    label: str = str(node.get("label", ""))
+    _clear_label_index(data, nid, label)
+
+    new_index: dict[str, any] = {}
+    for i in range(0, len(data["nodes"])) {
+        id_val: int = int(str(data["nodes"][i].get("id", 0)))
+        if id_val != 0 {
+            new_index[str(id_val)] = data["nodes"][i]
+        }
+    }
+    data["node_index"] = new_index
+
+    if _key_exists(data["out_links"], nid_s) {
+        data["out_links"][nid_s] = []
+    }
+    if _key_exists(data["in_links"], nid_s) {
+        data["in_links"][nid_s] = []
+    }
+
+    _save_data(filepath, data)
+    print(json_dumps({"deleted": nid}))
+}
+
+
+def search_nodes(filepath: str, keyword: str) {
+    if keyword == "" {
+        print("[]")
+        return
+    }
+    kw: str = keyword.lower()
+    data: dict[str, any] = _make_data()
+    _fill_data(filepath, data)
+    matched: list[dict[str, any]] = []
+    id_s: str = ""
+    label: str = ""
+    found: int = 0
+    j: int = 0
+
+    if len(kw) <= 10 {
+        if _key_exists(data["label_index"], kw) {
+            id_arr: list[int] = data["label_index"][kw]
+            for i in range(0, len(id_arr)) {
+                id_s = str(id_arr[i])
+                if _key_exists(data["node_index"], id_s) {
+                    matched.append(data["node_index"][id_s])
+                }
+            }
+        } else {
+            for i in range(0, len(data["nodes"])) {
+                label = str(data["nodes"][i].get("label", "")).lower()
+                found = 0
+                j = 0
+                while j <= len(label) - len(kw) {
+                    if label[j:j+len(kw)] == kw {
+                        found = 1
+                    }
+                    j = j + 1
+                }
+                if found == 1 {
+                    matched.append(data["nodes"][i])
+                }
+            }
+        }
+    } else {
+        for i in range(0, len(data["nodes"])) {
+            label = str(data["nodes"][i].get("label", "")).lower()
+            found = 0
+            j = 0
+            while j <= len(label) - len(kw) {
+                if label[j:j+len(kw)] == kw {
+                    found = 1
+                }
+                j = j + 1
+            }
+            if found == 1 {
+                matched.append(data["nodes"][i])
+            }
+        }
+    }
+
+    print(json_dumps(matched))
+}
+
+
+# ===========================================================================
+# 演示主函数
+# ===========================================================================
+
+def main(args: list[str]) {
+    fp: str = "connect_node.json"
+
+    print("========================================\n")
+    print("  CatBase JSON 图数据管理器 演示\n")
+    print("========================================\n\n")
+
+    print("【get_node 查询节点 1】\n")
+    get_node(fp, 1)
+    print("\n\n")
+
+    print("【add_node 新增节点 99999】\n")
+    add_node(fp, 99999, "演示节点", "CatBase 测试", "demo")
+    print("\n\n")
+
+    print("【add_link 添加连接 1->99999】\n")
+    add_link(fp, 1, 99999)
+    print("\n\n")
+
+    print("【get_neighbors 查询节点 99999】\n")
+    get_neighbors(fp, 99999, "both")
+    print("\n\n")
+
+    print("【search_nodes 搜索 \"PLC\"】\n")
+    search_nodes(fp, "PLC")
+    print("\n\n")
+
+    print("【delete_node 删除 99999】\n")
+    delete_node(fp, 99999)
+    print("\n\n")
+
+    print("演示完成！\n")
+}

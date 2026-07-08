@@ -1,0 +1,23 @@
+# 音频录制和播放示例
+# 演示 CatBase 的录音和播放功能
+
+def main(args:list[str]) {
+    print("开始录音，3秒...\n")
+    
+    # 录音：录制3秒音频，返回 PCM 数据
+    # 参数: duration, sample_rate, channels, device_name, chunk
+    pcm_data:bytes = record(3, 16000, 1, "plughw:CARD=3,DEV=0", 1024)
+
+    print("录音完成！\n")
+    print("录制的数据大小: ", len(pcm_data), " 字节\n")
+    
+    # 播放录制的音频
+    print("开始播放...\n")
+    play(pcm_data, 16000, "plughw:CARD=1,DEV=0")
+    
+    print("播放完成！\n")
+    
+    # 保存为 WAV 文件
+    save_wav(pcm_data, "recording.wav", 16000)
+    print("音频已保存到: recording.wav\n")
+}

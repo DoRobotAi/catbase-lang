@@ -1,0 +1,9 @@
+def main(args:list[str]) {
+    quotient:int = 10 / 3
+    remainder:int = 10 % 3
+    print("10 / 3 = ")
+    print(quotient)
+    print(" ... ")
+    print(remainder)
+    print("\n")
+}

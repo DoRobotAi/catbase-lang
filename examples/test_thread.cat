@@ -1,0 +1,9 @@
+def print_hello() {
+    print("Hello from thread!")
+}
+
+def main(args:list[str]) {
+    print("Starting thread test...")
+    thread print_hello()
+    print("Thread threaded!")
+}

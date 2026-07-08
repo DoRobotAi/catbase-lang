@@ -1,0 +1,27 @@
+# 测试函数返回路径完整性
+def missing_return(a:int) -> int {
+    if a > 0 {
+        return a
+    }
+    # 缺少返回语句
+}
+
+def missing_return_else(a:int) -> int {
+    if a > 0 {
+        return a
+    } else {
+        # else 分支缺少返回
+    }
+}
+
+def duplicate_params(a:int, b:int, a:int) -> int {
+    return a + b
+}
+
+def bad_default_value(x:int = "hello") -> int {
+    return x
+}
+
+def main(args:list[str]) {
+    print("test")
+}

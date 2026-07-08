@@ -1,0 +1,18 @@
+def main(args:list[str]) {
+    print("=== Testing TCP Connect Timeout ===\n")
+    
+    # 测试 TCP 连接超时（使用不可达的 IP）
+    try {
+        sock:TCPSocket = tcpsocket()
+        sock.connect("192.168.254.254", 9999, 3)
+        print("Unexpected success!\n")
+        sock.close()
+    }
+    except err {
+        print("TCP connect timeout correctly caught: ")
+        print(err)
+        print("\n")
+    }
+    
+    print("\n=== TCP Connect Timeout Test Completed ===\n")
+}

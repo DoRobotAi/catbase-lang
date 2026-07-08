@@ -1,0 +1,11 @@
+# 预期错误的测试，thread的返回值不应该是int
+def compute_sum(a:int, b:int) -> int {
+    result:int = a + b
+    return result
+}
+
+def main(args:list[str]) {
+    print("Testing thread with return value...")
+    result:int = thread compute_sum(5, 3)
+    print("Result: ", result)
+}

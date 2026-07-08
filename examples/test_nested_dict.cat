@@ -1,0 +1,4 @@
+def main(args:list[str]) {
+    data: dict[str, any] = {"choices": [{"delta": {"content": "hello"}}]}
+    print("data:", data, "\n")
+}

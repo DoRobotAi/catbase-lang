@@ -1,0 +1,11 @@
+inta:int = 100
+def main(args:list[str]) {
+
+	try{
+		print(inta)
+	}
+	catch e {
+		print(e)
+	}
+
+}

@@ -1,0 +1,47 @@
+def add(a:int,b:int) -> int{
+	print("add()")
+	return a+b
+}
+def sub(a:int,b:int) -> int{
+	print("sub()")
+	return b-a
+}
+def mul(a:int,b:int) -> int{
+	print("mul()")
+	return b*a
+}
+def div(a:int,b:int) -> int{
+	print("div()")
+	return b/a
+}
+def fadd(a:float,b:float) -> float{
+	print("fadd()")
+	return a+b
+}
+def fsub(a:float,b:float) -> float{
+	print("fsub()")
+	return b-a
+}
+def fmul(a:float,b:float) -> int{
+	print("fmul()")
+	return int(b*a)
+}
+def fdiv(a:float,b:float) -> int{
+	print("fdiv()")
+	return int(b/a)
+}
+def ftat(a:float=7,b:float=5) -> float{
+	print("ftat()")
+	return a*b
+}
+def xtat(a:int=7,b:int=5) -> str{
+	print("xtat()")
+	o:int=0
+	o=a*b
+	if (o>2){
+		return None
+	}
+	else{
+		return "ok"
+	}
+}

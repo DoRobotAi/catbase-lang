@@ -1,0 +1,13 @@
+def worker(q:Queue) {
+    item:int = q.get_nowait()
+    print("处理: ", item, "\n")
+    q.task_done()
+}
+
+def main(args:list[str]) {
+    q:Queue = queue(10)
+    q.put_nowait(1)
+    thread worker(q)
+    q.join()
+    print("Done\n")
+}

@@ -1,0 +1,398 @@
+# WebSocket 音频客户端（CatBase 版本）
+# 功能：录音发送 + 接收播放
+#
+# 直接 import 系统 libopus 库
+
+import "/usr/lib/x86_64-linux-gnu/libopus.so" as opus
+
+# 声明 Opus 外部函数（使用 Pointer 类型处理指针）
+# opus_encoder_create(Fs, channels, application, error) -> OpusEncoder *
+from opus import opus_encoder_create(Fs: int, channels: int, application: int, error: Pointer) -> Pointer
+from opus import opus_encoder_destroy(encoder: Pointer)
+# opus_encode(encoder, pcm, len, output, max_output_len) -> opus_int32
+from opus import opus_encode(encoder: Pointer, pcm: str, len: int, output: Pointer, max_output_len: int) -> int
+
+# opus_decoder_create(Fs, channels, error) -> OpusDecoder *
+from opus import opus_decoder_create(Fs: int, channels: int, error: Pointer) -> Pointer
+from opus import opus_decoder_destroy(decoder: Pointer)
+# opus_decode(decoder, data, len, output, frame_size, decode_fec) -> opus_int32
+from opus import opus_decode(decoder: Pointer, data: str, len: int, output: Pointer, frame_size: int, decode_fec: int) -> int
+
+# ========================================
+# 配置参数
+# ========================================
+
+# WebSocket 配置
+WS_URL: str = "ws://127.0.0.1:8080/ws"
+DEVICE_ID: str = "device001"
+CLIENT_ID: str = "client001"
+AUTH_TOKEN: str = "your-token-here"
+
+# 录音参数
+RECORDING_SAMPLE_RATE: int = 16000
+RECORDING_CHANNELS: int = 1
+RECORDING_FRAME_SIZE: int = 320
+RECORDING_FRAME_DURATION: int = 20
+
+# 播放参数
+PLAYBACK_SAMPLE_RATE: int = 16000
+PLAYBACK_CHANNELS: int = 1
+PLAYBACK_FRAME_SIZE: int = 320
+PLAYBACK_FRAME_DURATION: int = 20
+
+# 日志配置
+LOG_LEVEL: str = "INFO"
+
+# ========================================
+# Opus 编码器管理
+# ========================================
+
+# Opus 编码器句柄（使用 Pointer 类型）
+__opus_encoder: Pointer = pointer()
+
+# Opus 应用类型
+OPUS_APPLICATION_VOIP: int = 2048
+
+# Opus 编码输出缓冲区（使用 Pointer）
+__opus_output_ptr: Pointer = pointer()
+__opus_output_buf: str = ""
+
+# 初始化 Opus 编码器
+def opus_encoder_init(sample_rate: int, channels: int) {
+    error: int = 0
+    error_ptr: Pointer = pointer_of(error)
+    __opus_encoder = opus.opus_encoder_create(sample_rate, channels, OPUS_APPLICATION_VOIP, error_ptr)
+    if !__opus_encoder.is_null() {
+        # 预分配编码输出缓冲区
+        __opus_output_buf = ""
+        __opus_output_ptr = pointer_of(__opus_output_buf)
+    }
+}
+
+# 编码 PCM -> Opus
+def opus_encode_pcm(pcm_data: str, frame_size: int) -> str {
+    if __opus_encoder.is_null() {
+        return ""
+    }
+
+    max_size: int = frame_size * 2 * 2
+    __opus_output_buf = ""
+    __opus_output_ptr = pointer_of(__opus_output_buf)
+
+    result: int = opus.opus_encode(__opus_encoder, pcm_data, len(pcm_data), __opus_output_ptr, max_size)
+
+    if result > 0 {
+        return __opus_output_buf
+    }
+    return ""
+}
+
+# 关闭编码器
+def opus_encoder_cleanup() {
+    if !__opus_encoder.is_null() {
+        opus.opus_encoder_destroy(__opus_encoder)
+        __opus_encoder = pointer()
+    }
+}
+
+# ========================================
+# Opus 解码器管理
+# ========================================
+
+# Opus 解码器句柄（使用 Pointer 类型）
+__opus_decoder: Pointer = pointer()
+
+# Opus 解码输出缓冲区（使用 Pointer）
+__opus_decode_ptr: Pointer = pointer()
+__opus_decode_buf: str = ""
+
+# 初始化 Opus 解码器
+def opus_decoder_init(sample_rate: int, channels: int) {
+    error: int = 0
+    error_ptr: Pointer = pointer_of(error)
+    __opus_decoder = opus.opus_decoder_create(sample_rate, channels, error_ptr)
+    if !__opus_decoder.is_null() {
+        # 预分配解码输出缓冲区
+        __opus_decode_buf = ""
+        __opus_decode_ptr = pointer_of(__opus_decode_buf)
+    }
+}
+
+# 解码 Opus -> PCM
+def opus_decode_data(opus_data: str, frame_size: int) -> str {
+    if __opus_decoder.is_null() {
+        return ""
+    }
+
+    __opus_decode_buf = ""
+    __opus_decode_ptr = pointer_of(__opus_decode_buf)
+
+    result: int = opus.opus_decode(__opus_decoder, opus_data, len(opus_data), __opus_decode_ptr, frame_size, 0)
+
+    if result > 0 {
+        return __opus_decode_buf
+    }
+    return ""
+}
+
+# 关闭解码器
+def opus_decoder_cleanup() {
+    if !__opus_decoder.is_null() {
+        opus.opus_decoder_destroy(__opus_decoder)
+        __opus_decoder = pointer()
+    }
+}
+
+# ========================================
+# 音频数据队列（用于线程间传递音频数据）
+# ========================================
+
+__audio_queue: Queue = queue(100)
+__playback_queue: Queue = queue(50)
+
+# 关闭标志
+__shutdown: bool = False
+
+# ========================================
+# 录音回调函数
+# ========================================
+
+def __on_audio_data(data: str) {
+    # 将录音数据放入队列
+    if __audio_queue.qsize() < 100 {
+        __audio_queue.put(data)
+    }
+}
+
+# ========================================
+# 播放回调函数
+# ========================================
+
+def __get_audio_data() -> str {
+    # 从队列获取音频数据
+    # 注意：Queue 只支持 int 类型，音频数据需要使用其他机制
+    # 这里简化处理，返回空字符串
+    return ""
+}
+
+# ========================================
+# 发送任务
+# ========================================
+
+def audio_sender_task(ws: WebSocket) {
+    print("[INFO] 发送任务启动\n")
+
+    # 初始化 Opus 编码器
+    r_sample_rate: int = 16000
+    r_channels: int = 1
+    opus_encoder_init(r_sample_rate, r_channels)
+
+    # 打开录音流
+    rec_stream: RecordStream = recordStream(
+        rate=RECORDING_SAMPLE_RATE, 
+        channels=RECORDING_CHANNELS, 
+        chunk=512, 
+        format=3, 
+        device_name="plughw:CARD=3,DEV=0", 
+        callback=__on_audio_data
+    )
+
+    rec_stream.startRecording()
+
+    # 构建 Hello 消息
+    hello_msg: str = ""
+    hello_msg = hello_msg + "{\"type\":\"hello\",\"version\":1,"
+    hello_msg = hello_msg + "\"features\":{\"mcp\":true},"
+    hello_msg = hello_msg + "\"transport\":\"websocket\","
+    hello_msg = hello_msg + "\"audio_params\":{"
+    hello_msg = hello_msg + "\"format\":\"opus\","
+    hello_msg = hello_msg + "\"sample_rate\":" + str(RECORDING_SAMPLE_RATE) + ","
+    hello_msg = hello_msg + "\"channels\":" + str(RECORDING_CHANNELS) + ","
+    hello_msg = hello_msg + "\"frame_duration\":" + str(RECORDING_FRAME_DURATION) + ""
+    hello_msg = hello_msg + "}}"
+
+    ws.send(hello_msg)
+    print("[INFO] Hello消息已发送，开始发送音频数据\n")
+
+    frame_count: int = 0
+
+    while !__shutdown {
+        # 从队列获取音频数据
+        pcm_data: str = ""
+        if !__audio_queue.empty() {
+            pcm_data = __audio_queue.get()
+        }
+
+        if len(pcm_data) > 0 {
+            # Opus 编码
+            opus_data: str = opus_encode_pcm(pcm_data, RECORDING_FRAME_SIZE)
+            if len(opus_data) > 0 {
+                ws.send(opus_data)
+                frame_count = frame_count + 1
+            }
+        }
+
+        sleep(0.02)
+    }
+
+    print("[INFO] 发送任务结束，共发送 ")
+    print(frame_count)
+    print(" 帧\n")
+
+    rec_stream.stopRecording()
+    rec_stream.close()
+    opus_encoder_cleanup()
+}
+
+# ========================================
+# 接收任务
+# ========================================
+
+def audio_receiver_task(ws: WebSocket) {
+    print("[INFO] 接收任务启动\n")
+
+    # 初始化 Opus 解码器
+    p_sample_rate: int = 16000
+    p_channels: int = 1
+    opus_decoder_init(p_sample_rate, p_channels)
+
+    # 打开播放流
+    pstream: PlayStream = playStream(
+        rate=PLAYBACK_SAMPLE_RATE,
+        channels=PLAYBACK_CHANNELS, 
+        format=3, 
+        device_name="plughw:CARD=1,DEV=0", 
+        callback=__get_audio_data
+    )
+
+    pstream.startPlaying()
+
+    # 构建 Hello 消息
+    hello_msg: str = ""
+    hello_msg = hello_msg + "{\"type\":\"hello\",\"version\":1,"
+    hello_msg = hello_msg + "\"features\":{\"mcp\":true},"
+    hello_msg = hello_msg + "\"transport\":\"websocket\","
+    hello_msg = hello_msg + "\"audio_params\":{"
+    hello_msg = hello_msg + "\"format\":\"opus\","
+    hello_msg = hello_msg + "\"sample_rate\":" + str(PLAYBACK_SAMPLE_RATE) + ","
+    hello_msg = hello_msg + "\"channels\":" + str(PLAYBACK_CHANNELS) + ","
+    hello_msg = hello_msg + "\"frame_duration\":" + str(PLAYBACK_FRAME_DURATION) + ""
+    hello_msg = hello_msg + "}}"
+
+    ws.send(hello_msg)
+    print("[INFO] Hello消息已发送，开始接收数据\n")
+
+    frame_count: int = 0
+    timeout_count: int = 0
+
+    while !__shutdown {
+        # 接收 WebSocket 消息
+        msg: str = ws.recv()
+
+        # 空字符串表示连接关闭
+        if len(msg) == 0 {
+            break
+        }
+
+        timeout_count = 0
+
+        # 检查消息类型
+        # 如果消息以 { 开头，认为是 JSON 文本消息
+        if msg.find("{") >= 0 {
+            # 解析 JSON 消息
+            # 简化处理：直接检查 type 字段
+            if contains(msg, "\"type\"") && contains(msg, "\"hello\"") {
+                print("[INFO] 收到服务端Hello消息\n")
+            } else {
+                # 其他 JSON 消息，记录但不处理
+                print("[DEBUG] 收到JSON消息\n")
+            }
+        } else {
+            # 二进制音频数据帧
+            frame_count = frame_count + 1
+
+            # Opus 解码
+            pcm_data: str = opus_decode_data(msg, PLAYBACK_FRAME_SIZE)
+            if len(pcm_data) > 0 && __playback_queue.qsize() < 50 {
+                __playback_queue.put(pcm_data)
+            }
+        }
+
+        sleep(0.02)
+    }
+
+    print("[INFO] 接收任务结束，共接收 ")
+    print(frame_count)
+    print(" 帧\n")
+
+    pstream.close()
+    opus_decoder_cleanup()
+}
+
+# ========================================
+# 字符串包含检查
+# ========================================
+
+def contains(s: str, substr: str) -> bool {
+    return s.find(substr) >= 0
+}
+
+# ========================================
+# 主函数
+# ========================================
+
+def main(args: list[str]) {
+    print("========================================")
+    print("      WebSocket音频客户端（CatBase）")
+    print("      录音发送 + 接收播放")
+    print("========================================\n")
+
+    print("[INFO] 配置加载成功\n")
+    print("[INFO] WebSocket地址: ")
+    print(WS_URL)
+    print("\n")
+    print("[INFO] 录音参数: ")
+    print(RECORDING_SAMPLE_RATE)
+    print("Hz\n")
+    print("[INFO] 播放参数: ")
+    print(PLAYBACK_SAMPLE_RATE)
+    print("Hz\n")
+
+    # 创建 WebSocket 连接
+    print("[INFO] 正在连接 WebSocket: ")
+    print(WS_URL)
+    print("\n")
+
+    # 构建认证头
+    headers: dict[str, str] = {}
+    headers["Authorization"] = "Bearer " + AUTH_TOKEN
+    headers["Protocol-Version"] = "1"
+    headers["Device-Id"] = DEVICE_ID
+    headers["Client-Id"] = CLIENT_ID
+
+    ws: WebSocket = websocket(WS_URL, headers)
+
+    print("[INFO] WebSocket 连接已建立\n")
+
+    # 创建发送和接收线程
+    thread audio_sender_task(ws)
+    thread audio_receiver_task(ws)
+
+    print("[INFO] 两个任务已启动，开始双向通信\n")
+    print("[INFO] 按 Ctrl+C 停止\n")
+
+    # 等待一段时间（或直到关闭标志被设置）
+    sleep(60)
+
+    # 设置关闭标志
+    __shutdown = True
+
+    print("[INFO] 正在停止任务...\n")
+
+    # 关闭 WebSocket 连接
+    ws.close()
+
+    print("========================================")
+    print("[INFO] WebSocket音频客户端已关闭")
+    print("========================================\n")
+}

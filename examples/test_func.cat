@@ -1,0 +1,11 @@
+def divide() -> list[int] {
+    quotient:int = 1
+    remainder:int = 2
+    r:list[int]=[quotient, remainder]
+    return r
+}
+
+def main(args:list[str]) {
+    result:list[int] = divide()
+    print(result[0],result[1])
+}

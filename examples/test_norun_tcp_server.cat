@@ -1,0 +1,33 @@
+def main(args:list[str]) {
+    print("=== TCP Server ===\n")
+    
+    try {
+        # 创建 TCP socket
+        server:TCPSocket = tcpsocket()
+        server.bind("0.0.0.0", 8888)
+        server.listen(128)
+        print("TCP Server listening on 0.0.0.0:8888\n")
+        
+        # 接受连接
+        print("Waiting for client connection...\n")
+        client:TCPClient = server.accept()
+        print("Client connected\n")
+        
+        # 读取客户端数据
+        data:str = client.read(1024)
+        print("Received from client: ", data, "\n")
+        
+        # 发送响应
+        response:str = "HTTP/1.0 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nHello World!"
+        client.write(response)
+        print("Response sent\n")
+        
+        # 关闭连接
+        client.close()
+        server.close()
+        print("TCP Server test completed\n")
+    }
+    except err {
+        print("TCP Server error: ", err, "\n")
+    }
+}

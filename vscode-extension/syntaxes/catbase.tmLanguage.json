@@ -1,0 +1,50 @@
+{
+	"name": "CatBase",
+	"scopeName": "source.catbase",
+	"fileTypes": ["cat"],
+	"patterns": [
+		{
+			"name": "comment.block",
+			"begin": "/\\*",
+			"end": "\\*/"
+		},
+		{
+			"name": "comment.line.double-slash",
+			"match": "//.*"
+		},
+		{
+			"name": "comment.line.hash",
+			"match": "#.*"
+		},
+		{
+			"name": "string.quoted.double",
+			"begin": "\"",
+			"end": "\""
+		},
+		{
+			"name": "string.quoted.single",
+			"begin": "'",
+			"end": "'"
+		},
+		{
+			"name": "keyword.control",
+			"match": "\\b(def|if|else|elif|for|while|return|spawn|channel|select|case|default)\\b"
+		},
+		{
+			"name": "keyword.other",
+			"match": "\\b(var|const|true|false|null|import|as|in|not|and|or|type|struct|enum|match)\\b"
+		},
+		{
+			"name": "storage.type",
+			"match": "\\b(int|float|str|bool|list|dict|bytes|any|void)\\b"
+		},
+		{
+			"name": "support.function",
+			"match": "\\b(print|len|range|input|type|json\\.parse|json\\.stringify|socket|thread|channel|queue)\\b"
+		},
+		{
+			"name": "constant.numeric",
+			"match": "\\b\\d+(\\.\\d+)?\\b"
+		}
+	]
+}

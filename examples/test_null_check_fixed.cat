@@ -1,0 +1,27 @@
+def get_value(flag: int) -> str {
+    if flag > 0 {
+        return "hello"
+    } else {
+        return None
+    }
+}
+
+def test_null_check() {
+    result: str = get_value(0)
+    if result is None {
+        print("result is None")
+    } else {
+        print(result)
+    }
+    
+    result2: str = get_value(1)
+    if result2 is None {
+        print("None")
+    } else {
+        print(result2)
+    }
+}
+
+def main(args:list[str]) {
+    test_null_check()
+}

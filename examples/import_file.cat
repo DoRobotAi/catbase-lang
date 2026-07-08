@@ -1,0 +1,20 @@
+def readFile() -> str{
+	s:File = file("./b.txt")
+	data:str = s.read()
+	return data
+}
+
+def writeFile(content:str) {
+	s:File = file("./b.txt", "w")
+	s.write(content)
+}
+
+def appendFile(content:str) {
+	s:File = file("./b.txt", "w")
+	s.append(content)
+}
+
+def writeFileAt(content:str, pos:int) {
+	s:File = file("./b.txt", "w")
+	s.writeAt(content, pos)
+}

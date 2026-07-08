@@ -1,0 +1,31 @@
+# Test thread() and join() functionality
+
+def worker(a:int, b:int) {
+    print("Worker started with", a, b)
+    result:int = a + b
+    print("Worker result:", result)
+}
+
+def test_thread_syntax() {
+    print("=== Testing thread() function ===")
+    
+    # Test 1: 使用 thread worker(1) 创建线程并获取句柄
+    t1:Thread = thread worker(1, 2)
+    print("Thread created, t1 type:", type(t1))
+    
+    # Test 2: 使用 join() 等待线程结束
+    t1.join()
+    print("Thread t1 joined")
+    
+    # Test 3: 创建多个线程
+    t2:Thread = thread worker(10, 20)
+    t2.join()
+    print("Thread t2 joined")
+    
+    print("=== All thread tests passed ===")
+}
+
+# 主函数
+def main(args:list[str]) {
+    test_thread_syntax()
+}

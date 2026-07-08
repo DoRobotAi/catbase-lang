@@ -1,0 +1,36 @@
+def main(args:list[str]) {
+    print("=== UDP Server ===\n")
+    
+    try {
+        server:UDPSocket = udpsocket()
+        server.bind("0.0.0.0", 9999)
+        print("UDP Server listening on 0.0.0.0:9999\n")
+        
+        counter:int = 0
+        while True {
+            data:str = ""
+            result:int = 0
+            
+            try {
+                data = server.recvfrom(1024, 3)
+                result = 1
+            }
+            except err {
+                result = 0
+            }
+            
+            if result == 1 {
+                print("Received: ", data, "\n")
+                server.sendto("Received: " + data, "127.0.0.1", 9998)
+                print("Response sent\n")
+            }
+            
+            counter = counter + 1
+        }
+        
+        server.close()
+    }
+    except err {
+        print("Server error: ", err, "\n")
+    }
+}

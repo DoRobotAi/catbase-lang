@@ -1,0 +1,23 @@
+# 测试音频设备列表函数
+
+def main(args:list[str]) {
+    print("=== 输入设备列表 ===\n")
+    input_devices:list[dict[str, str]] = getInputDeviceList()
+    i:int = 0
+    while i < len(input_devices) {
+        in_dev:dict[str, str] = input_devices[i]
+        print(in_dev)
+        #print("  ", i, ": name=", in_dev["name"], ", desc=", in_dev["description"], "\n")
+        i = i + 1
+    }
+
+    print("\n=== 输出设备列表 ===\n")
+    output_devices:list[dict[str, str]] = getOutputDeviceList()
+    j:int = 0
+    while j < len(output_devices) {
+        out_dev:dict[str, str] = output_devices[j]
+        print(out_dev)
+        #print("  ", j, ": name=", out_dev["name"], ", desc=", out_dev["description"], "\n")
+        j = j + 1
+    }
+}

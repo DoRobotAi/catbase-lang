@@ -1,0 +1,31 @@
+{
+  "name": "catbase-language",
+  "displayName": "CatBase Language",
+  "description": "CatBase programming language support for VS Code",
+  "icon": "./icon.png",
+  "readme": "./README.md",
+  "version": "0.0.6",
+  "publisher": "dorobotai",
+  "engines": {
+    "vscode": "^1.61.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "catbase",
+        "aliases": ["CatBase"],
+        "extensions": [".cat"]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "catbase",
+        "scopeName": "source.catbase",
+        "path": "./syntaxes/catbase.tmLanguage.json"
+      }
+    ]
+  }
+}

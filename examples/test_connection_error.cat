@@ -1,0 +1,28 @@
+# 这是一个测试连接错误的示例
+def main(args:list[str]) {
+    print("Starting connection test with 3s timeout\n")
+    
+    url:str = "http://192.168.254.254:9999/v1"
+    data:dict[str, any] = {
+        "test": "value"
+    }
+    
+    print("Trying to connect to unreachable server: ")
+    print(url)
+    print("\n")
+    
+    try {
+        response:Response = http_post(url, json=data, timeout=3)
+        response.raise_for_status()
+        print("Response status: ")
+        print(response.status_code)
+        print("\n")
+    }
+    except err {
+        print("Error occurred: ")
+        print(err)
+        print("\n")
+    }
+    
+    print("Test completed\n")
+}

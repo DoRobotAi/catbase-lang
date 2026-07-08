@@ -1,0 +1,61 @@
+async def handle_request(request_id:int) {
+    print("Request ", request_id, " started\n")
+    sleep(0.01)  # 模拟一些工作
+    print("Request ", request_id, " completed\n")
+}
+
+async def concurrent_task(id:int) {
+    print("Task ", id, " running\n")
+    sleep(0.2)
+    print("Task ", id, " done\n")
+}
+
+async def shutdown_check_task(id:int) {
+    print("Shutdown check task ", id, " started\n")
+    # 模拟长时间运行的任务，可以检查 shutdown 状态
+    for _ in range(10) {
+        if shutdown_requested() {
+            print("Task ", id, " detected shutdown request, stopping...\n")
+            return
+        }
+        sleep(0.1)
+    }
+    print("Task ", id, " completed normally\n")
+}
+
+def main(args:list[str]) {
+    print("=== Testing async/await with threads ===\n")
+
+    # 测试 await 调用异步函数
+    print("--- Test 1: Sequential await ---\n")
+    await handle_request(1)
+    await handle_request(2)
+    await handle_request(3)
+
+    print("\n--- Test 2: Multiple concurrent tasks ---\n")
+
+    # 启动多个并发任务
+    for i in range(5) {
+        await concurrent_task(i)
+    }
+
+    print("\n--- Test 3: Shutdown event test ---\n")
+    print("Starting tasks that check shutdown_requested()...\n")
+    print("Press Ctrl+C to trigger graceful shutdown.\n")
+
+    # 启动可以响应 shutdown 请求的任务
+    for i in range(3) {
+        thread shutdown_check_task(i)
+    }
+
+    # 等待关闭事件（最多等待10秒后自动退出）
+    print("Waiting for shutdown event (max 10 seconds)...\n")
+    result:bool = wait_shutdown_event(10)
+    if result {
+        print("Shutdown event received!\n")
+    } else {
+        print("Timeout reached, continuing...\n")
+    }
+
+    print("\n=== All tests completed ===\n")
+}

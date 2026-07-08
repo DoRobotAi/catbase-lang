@@ -1,0 +1,14 @@
+# 测试 file() 和 f.close()
+def main(args:list[str]) {
+    # 测试文件操作
+    f:File = file("test_file.txt", "w")
+    f.write("Hello from file()!")
+    f.close()
+    
+    f = file("test_file.txt", "r")
+    content:str = f.read()
+    print("文件内容:", content)
+    f.close()
+    
+    print("\nfile() 和 f.close() 测试完成!")
+}
