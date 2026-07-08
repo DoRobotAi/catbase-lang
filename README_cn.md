@@ -11,8 +11,6 @@
 [![Official Website](http://img.shields.io/badge/-catbase--lang.com-2ea44f?style=for-the-badge)](http://catbase-lang.com)
 [![Company](https://img.shields.io/badge/-dorobot.net-ff69b4?style=for-the-badge)](http://dorobot.net)
 [![Language](https://img.shields.io/badge/language-CatBase-blue.svg?style=for-the-badge)]()
-[![Backend](https://img.shields.io/badge/backend-Zig-orange.svg?style=for-the-badge)](https://ziglang.org/)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=for-the-badge)]()
 
 [English](README.md) · [简体中文](#) · [官方文档](doc/catbase.md) · [官网](http://catbase-lang.com) · [公司官网](http://dorobot.net)
 
