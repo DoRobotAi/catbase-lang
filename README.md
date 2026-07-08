@@ -68,10 +68,10 @@ The CatBase programming language was born for AI application development. In min
 
 ```bash
 # 1. Extract the source package
-$ tar -zxvf ./catbase_v0.0.6.tar.gz
+$ tar -zxvf ./catbase_v0.0.6_linux_x86_64.tar.gz
 
 # 2. Enter the project directory
-$ cd catbase_v0.0.6
+$ cd catbase_v0.0.6_linux_x86_64
 
 # 3. Run the dependency installer
 $ ./setup-deps.sh
