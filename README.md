@@ -1,5 +1,6 @@
 <div align="center">
-<img src="catbase-fang.jpg" alt="CatBase Logo" style="zoom:30%;" />
+<img src="catbase-fang.jpg" alt="CatBase Logo" style="zoom:25%;" />
+
 # CatBase Programming Language
 
 **为 AI 应用研发而生的现代编程语言** — 极小运行环境下可替代 C，支持 Python 风格语法，编译为高性能本地二进制。
@@ -394,4 +395,3 @@ CatBase 将持续迭代优化，未来计划支持：
 **如果 CatBase 对你有帮助，请给一个 ⭐ Star！**
 
 Made with ❤️ in 珠海 · [catbase-lang.com](http://catbase-lang.com) · [dorobot.net](http://dorobot.net)
-
