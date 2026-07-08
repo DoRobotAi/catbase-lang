@@ -1,9 +1,12 @@
 <div align="center">
+
+> 🌐 English · **[简体中文](README_cn.md)**
+
 <img src="catbase-fang.jpg" alt="CatBase Logo" style="zoom:25%;" />
 
 # CatBase Programming Language
 
-**为 AI 应用研发而生的现代编程语言** — 极小运行环境下可替代 C，支持 Python 风格语法，编译为高性能本地二进制。
+**A modern programming language born for AI application development** — A Python-syntax alternative to C for minimal runtime environments, compiled into high-performance native binaries.
 
 [![Official Website](http://img.shields.io/badge/-catbase--lang.com-2ea44f?style=for-the-badge)](http://catbase-lang.com)
 [![Company](https://img.shields.io/badge/-dorobot.net-ff69b4?style=for-the-badge)](http://dorobot.net)
@@ -11,82 +14,82 @@
 [![Backend](https://img.shields.io/badge/backend-Zig-orange.svg?style=for-the-badge)](https://ziglang.org/)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=for-the-badge)]()
 
-[English](#) · [简体中文](#) · [官方文档](doc/catbase.md) · [官网](http://catbase-lang.com) · [公司官网](http://dorobot.net)
+[English](#) · [简体中文](README_cn.md) · [Official Docs](doc/catbase.md) · [Website](http://catbase-lang.com) · [Company](http://dorobot.net)
 
 </div>
 
 ---
 
-## ✨ 简介
+## ✨ Introduction
 
-**CatBase** 是一种全新的静态类型编程语言，专为 AI 应用研发与快速开发而设计，由来自中国的**钟声**设计并研发。它的语法类似 Python，但比 Python 更简单、更易学；同时能够编译为本地可执行文件，具有优异的运行性能，特别适合在**极小运行环境**下替代 C 语言。
+**CatBase** is a brand-new statically-typed programming language designed for AI application development and rapid prototyping, created by **Zhong Sheng** from China. Its syntax is similar to Python, but simpler and easier to learn; at the same time, it compiles to native executables with excellent runtime performance, making it particularly suitable for replacing C in **minimal runtime environments**.
 
-> **记住 5 个不同，就能顺畅使用 CatBase：**
-> 1. 程序块不再受制于缩进规则，而是使用 `{}` 大括号。
-> 2. 不依赖解释器，直接编译为本地二进制代码。
-> 3. 无需学习 C 指针和内存管理，用 Python 语法即可编写 C 才能编写的程序。
-> 4. **强类型**：变量必须声明类型，函数返回值必须声明类型，类型名称**大小写敏感**。
-> 5. 可方便调用 `.so`/`.a` 库，自身也可编译为 `.so`/`.a` 库。
+> **Remember these 5 differences, and you can use CatBase smoothly:**
+> 1. Code blocks no longer rely on indentation rules — use `{}` braces instead.
+> 2. No interpreter dependency — compiles directly to native binary code.
+> 3. No need to learn C pointers or memory management — write C-equivalent programs with Python syntax.
+> 4. **Strongly typed**: variables must declare their types, function return values must declare types, and type names are **case-sensitive**.
+> 5. Easily call `.so`/`.a` libraries, and CatBase itself can be compiled into `.so`/`.a` libraries.
 
-CatBase 编程语言是为 Ai 应用研发而生，极小运行环境下可以替代 c，支持 python 语法。
-
----
-
-## 🚀 主要特性
-
-- 🪶 **极简语法** — Python 风格，零缩进烦恼
-- ⚡ **本地性能** — 编译为原生二进制，无运行时解释器
-- 🧠 **AI 友好** — 专为 AI 应用研发设计
-- 🌐 **网络编程** — TCP / UDP / HTTP / WebSocket 全套支持
-- 🧵 **多线程** — 线程、互斥锁、消息队列、协程
-- 📁 **文件操作** — 简洁的文件读写 API
-- 🎵 **音频处理** — 录音、播放、WAV 文件保存
-- 🔌 **串口通信** — RS-232 / USB 转串口
-- 📦 **导入系统** — 模块化代码组织
-- 🛠️ **C 互操作** — 轻松调用 `.so` / `.a` 库
-- 📊 **JSON 处理** — 内置 JSON 解析与序列化
-- ⏱️ **时间函数** — 毫秒级和高精度计时
+The CatBase programming language was born for AI application development. In minimal runtime environments, it can replace C and supports Python syntax.
 
 ---
 
-## 📦 详细安装指南
+## 🚀 Key Features
 
-### 环境要求
+- 🪶 **Minimalist syntax** — Python-style, no indentation hassles
+- ⚡ **Native performance** — Compiles to native binary, no runtime interpreter
+- 🧠 **AI-friendly** — Designed specifically for AI application development
+- 🌐 **Network programming** — Full support for TCP / UDP / HTTP / WebSocket
+- 🧵 **Multithreading** — Threads, mutexes, message queues, coroutines
+- 📁 **File operations** — Concise file read/write API
+- 🎵 **Audio processing** — Recording, playback, WAV file saving
+- 🔌 **Serial communication** — RS-232 / USB-to-Serial
+- 📦 **Import system** — Modular code organization
+- 🛠️ **C interop** — Easily call `.so` / `.a` libraries
+- 📊 **JSON handling** — Built-in JSON parsing and serialization
+- ⏱️ **Time functions** — Millisecond and high-precision timing
 
-| 项目 | 要求 | 说明 |
+---
+
+## 📦 Detailed Installation Guide
+
+### System Requirements
+
+| Item | Requirement | Notes |
 |------|------|------|
-| 操作系统 | Linux（推荐 Ubuntu 20.04+ / Debian 11+） | Windows 需通过 WSL 或原生 Windows 版本 |
-| Zig 编译器 | 0.14.1+ | 由 `setup-deps.sh` 自动安装 |
-| C 编译器 | gcc / clang | 编译 Zig 运行时需要 |
-| 依赖库 | alsa-lib（可选） | 音频录制/播放功能 |
-| 工具 | curl 或 wget | 下载 Zig 安装包 |
+| Operating System | Linux (Ubuntu 20.04+ / Debian 11+ recommended) | Windows requires WSL or native Windows version |
+| Zig Compiler | 0.14.1+ | Auto-installed by `setup-deps.sh` |
+| C Compiler | gcc / clang | Required for compiling Zig runtime |
+| Dependency Library | alsa-lib (optional) | For audio recording/playback |
+| Tools | curl or wget | To download the Zig installer |
 
-### 快速安装（Linux）
+### Quick Install (Linux)
 
 ```bash
-# 1. 解压源码包
+# 1. Extract the source package
 $ tar -zxvf ./catbase_v0.0.6.tar.gz
 
-# 2. 进入项目目录
+# 2. Enter the project directory
 $ cd catbase_v0.0.6
 
-# 3. 运行依赖安装脚本
+# 3. Run the dependency installer
 $ ./setup-deps.sh
 
-# 4. 编译你的第一个 CatBase 程序
+# 4. Compile your first CatBase program
 $ ./bin/catbasecc ./examples/test_aa_HelloWorld.cat
  Compiling ./examples/test_aa_HelloWorld.cat...
  Invoking CatBase bin compiler...
  Compilation successful.
 
-# 5. 运行生成的二进制文件
+# 5. Run the generated binary
 $ ./test_aa_HelloWorld
 Hello world!
 ```
 
-### 第一个程序
+### Your First Program
 
-创建 `hello.cat`：
+Create `hello.cat`:
 
 ```cat
 def main(args: list[str]) {
@@ -94,7 +97,7 @@ def main(args: list[str]) {
 }
 ```
 
-编译并运行：
+Compile and run:
 
 ```bash
 $ ./bin/catbasecc hello.cat
@@ -102,54 +105,54 @@ $ ./hello
 Hello world!
 ```
 
-### 卸载
+### Uninstallation
 
 ```bash
-# 删除 Zig 安装
+# Remove Zig installation
 $ sudo rm -rf /usr/local/zig
 
-# 删除 CatBase 编译产物
+# Remove CatBase build artifacts
 $ rm -f test_aa_HelloWorld *.o runtime/*.zig runtime/*.o
 ```
 
 ---
 
-## 📖 代码示例
+## 📖 Code Examples
 
-### 基础语法
+### Basic Syntax
 
 ```cat
-# 变量声明（强类型）
+# Variable declaration (strongly typed)
 name: str = "CatBase"
 version: float = 0.6
 count: int = 100
 items: list[int] = [1, 2, 3, 4, 5]
 
-# 函数定义
+# Function definition
 def add(a: int, b: int) -> int {
     return a + b
 }
 
 def main(args: list[str]) {
-    # 打印
+    # Print
     print("Hello, " + name + "!")
     print("Version: " + str(version))
 
-    # 条件分支
+    # Conditional
     if count > 50 {
         print("many")
     } else {
         print("few")
     }
 
-    # 循环
+    # Loop
     for i in range(0, 5) {
         print(str(i))
     }
 }
 ```
 
-### 文件操作
+### File Operations
 
 ```cat
 def main(args: list[str]) {
@@ -164,7 +167,7 @@ def main(args: list[str]) {
 }
 ```
 
-### 网络编程（HTTP）
+### Network Programming (HTTP)
 
 ```cat
 def main(args: list[str]) {
@@ -173,7 +176,7 @@ def main(args: list[str]) {
 }
 ```
 
-### 多线程
+### Multithreading
 
 ```cat
 def worker(id: int) {
@@ -189,7 +192,7 @@ def main(args: list[str]) {
 }
 ```
 
-### JSON 处理
+### JSON Handling
 
 ```cat
 def main(args: list[str]) {
@@ -207,15 +210,15 @@ def main(args: list[str]) {
 }
 ```
 
-> 📚 完整语法参考请查看 [**CatBase 编程语言参考手册**](doc/catbase.md)
+> 📚 For the complete language reference, see the [**CatBase Programming Language Manual**](doc/catbase.md)
 
 ---
 
-## 🔧 配置（conf/config.conf）
+## 🔧 Configuration (conf/config.conf)
 
-通过 `conf/config.conf` 可以调整编译器行为，包括 Zig 路径、优化级别、错误显示方式等。
+The `conf/config.conf` file lets you adjust compiler behavior, including Zig paths, optimization level, and error display.
 
-### 完整配置示例
+### Full Configuration Example
 
 ```ini
 // CatBase Configuration File
@@ -250,34 +253,33 @@ keep_zig_files = true
 show_zig_errors = true
 ```
 
-### 配置项详细说明
+### Configuration Reference
 
-| 配置项 | 取值范围 | 默认值 | 说明 |
+| Config Key | Value Range | Default | Description |
 |--------|----------|--------|------|
-| `[zig] path` | 任意目录路径 | `/usr/local/zig` | Linux 下 Zig 安装路径，`setup-deps.sh` 会安装到这里 |
-| `[zig] win_path` | 任意目录路径 | `D:\CatBase_worksp\tools\zig` | Windows 下 Zig 安装路径 |
-| `[zig] download_url` | HTTP(S) URL | aarch64 Linux 包 | `setup-deps.sh` 下载 Zig 的 URL  x86 平台可改为 `zig-x86_64-linux-0.14.1.tar.xz` |
-| `[compiler] os` | `Linux` / `Windows` | `Linux` | 目标操作系统 |
-| `[compiler] runtime_dir` | 相对路径 | `runtime` | 生成的 Zig 运行时文件输出目录 |
-| `[compiler] optimization` | `ReleaseFast` / `ReleaseSmall` / `ReleaseSafe` | `ReleaseSmall` | Zig 优化模式：<br>• `ReleaseFast` - 最快执行速度<br>• `ReleaseSmall` - 最小可执行文件体积<br>• `ReleaseSafe` - 完整运行时安全检查 |
-| `[compiler] no_emit_obj` | `true` / `false` | `true` | 是否跳过生成 `.o` 目标文件 |
-| `[compiler] keep_zig_files` | `true` / `false` | `true` | 是否在 `runtime/` 目录保留 `.zig` 源文件 |
-| `[compiler] show_zig_errors` | `true` / `false` | `true` | 是否显示原始 Zig 编译器错误 |
+| `[zig] path` | Any directory path | `/usr/local/zig` | Zig install path on Linux. `setup-deps.sh` installs here. |
+| `[zig] win_path` | Any directory path | `D:\CatBase_worksp\tools\zig` | Zig install path on Windows. |
+| `[zig] download_url` | HTTP(S) URL | aarch64 Linux package | URL to download Zig. For x86 platforms, change to `zig-x86_64-linux-0.14.1.tar.xz`. |
+| `[compiler] os` | `Linux` / `Windows` | `Linux` | Target operating system. |
+| `[compiler] runtime_dir` | Relative path | `runtime` | Output directory for generated Zig runtime files. |
+| `[compiler] optimization` | `ReleaseFast` / `ReleaseSmall` / `ReleaseSafe` | `ReleaseSmall` | Zig optimization mode: <br>• `ReleaseFast` - Fastest execution <br>• `ReleaseSmall` - Smallest executable size <br>• `ReleaseSafe` - Full runtime safety checks |
+| `[compiler] no_emit_obj` | `true` / `false` | `true` | Whether to skip generating `.o` object files. |
+| `[compiler] keep_zig_files` | `true` / `false` | `true` | Whether to keep `.zig` files in the `runtime/` directory. |
+| `[compiler] show_zig_errors` | `true` / `false` | `true` | Whether to show raw Zig compiler errors. |
 
-### 源码映射功能（show_zig_errors）
+### Source Mapping Feature (show_zig_errors)
 
-`show_zig_errors` 控制编译错误显示策略：
+The `show_zig_errors` option controls how compilation errors are displayed:
 
-**当 `show_zig_errors = true` 时**（推荐开发时使用）：
+**When `show_zig_errors = true`** (recommended for development):
+- ✅ Show .cat source mapping (with line numbers and context)
+- ✅ Also show original Zig compiler errors
 
-- ✅ 显示 .cat 源码映射（带行号和上下文）
-- ✅ 同时显示原始 Zig 编译器错误
+**When `show_zig_errors = false`** (recommended for production):
+- ✅ Only show .cat source mapping
+- ❌ Hide original Zig errors (cleaner output)
 
-**当 `show_zig_errors = false` 时**（推荐生产环境）：
-- ✅ 只显示 .cat 源码映射
-- ❌ 隐藏原始 Zig 错误（更清洁的输出）
-
-启用后，Zig 编译错误会自动反向映射到对应的 `.cat` 源文件行号和上下文：
+When enabled, Zig compilation errors are automatically reverse-mapped to the corresponding `.cat` source file line numbers and context:
 
 ```
 ============================================================
@@ -306,26 +308,26 @@ runtime/test.zig:61:6: error: no field or member function named
 ============================================================
 ```
 
-### 性能调优建议
+### Performance Tuning Suggestions
 
-| 场景 | 推荐配置 |
+| Scenario | Recommended Config |
 |------|----------|
-| 开发调试 | `optimization = ReleaseSafe`<br>`keep_zig_files = true`<br>`show_zig_errors = true` |
-| 生产部署 | `optimization = ReleaseSmall`<br>`no_emit_obj = true`<br>`keep_zig_files = false` |
-| 性能基准测试 | `optimization = ReleaseFast`<br>`no_emit_obj = true` |
+| Development & Debugging | `optimization = ReleaseSafe`<br>`keep_zig_files = true`<br>`show_zig_errors = true` |
+| Production Deployment | `optimization = ReleaseSmall`<br>`no_emit_obj = true`<br>`keep_zig_files = false` |
+| Performance Benchmarking | `optimization = ReleaseFast`<br>`no_emit_obj = true` |
 
 ---
 
-## 🧪 运行测试套件
+## 🧪 Running the Test Suite
 
 ```bash
-# 编译并运行 examples 下所有测试
+# Compile and run all tests in examples/
 $ for f in examples/test_*.cat; do
     ./bin/catbasecc "$f" && echo "PASS: $f" || echo "FAIL: $f"
 done
 ```
 
-也可以使用仓库提供的测试脚本：
+Or use the provided test script:
 
 ```bash
 $ ./checkCatbasecc.sh
@@ -333,65 +335,67 @@ $ ./checkCatbasecc.sh
 
 ---
 
-## 🛣️ 路线图
+## 🛣️ Roadmap
 
-CatBase 将持续迭代优化，未来计划支持：
+CatBase will continue to evolve. Future plans include:
 
-- [ ] 更多的内置数据类型
-- [ ] 更丰富的标准库
-- [ ] 跨平台支持（Windows、macOS 等）
-- [ ] 更好的 IDE 支持
-- [ ] 包管理与在线仓库
-- [ ] 性能优化与体积缩减
+- [ ] More built-in data types
+- [ ] Richer standard library
+- [ ] Cross-platform support (Windows, macOS, etc.)
+- [ ] Better IDE support
+- [ ] Package management and online registry
+- [ ] Performance optimization and size reduction
 
-我们相信，CatBase 将成为一门实用、高效、易学的编程语言，帮助更多开发者实现他们的创意。
-
----
-
-## 👤 关于作者
-
-**CatBase** 编程语言由来自中国的**钟声**设计并研发。钟声同时也是中国珠海的**豆子机器人科技** (<http://dorobot.net>) 公司的创始人。
-
-**豆子机器人科技** (<http://dorobot.net>) 是一家专注于人工智能和机器人技术的创新公司，致力于开发智能化解决方案。CatBase 作为公司内部使用的编程语言，最初是为了解决项目开发中遇到的效率和性能问题而创建的。
-
-> CatBase 编程语言是为 AI 应用研发而生，极小运行环境下可以替代 C，支持 Python 语法。
+We believe CatBase will become a practical, efficient, and easy-to-learn programming language, helping more developers bring their ideas to life.
 
 ---
 
-## 🙏 致谢
+## 👤 About the Author
 
-感谢以下人员对 CatBase 的支持与贡献：
+The **CatBase** programming language was designed and developed by **Zhong Sheng** from China. Zhong Sheng is also the founder of **Dorobot Technology** (<http://dorobot.net>), based in Zhuhai, China.
 
-- 🎓 **所有 CatBase 语言的爱好者** — 感谢你们的选择和信任
-- 🌐 **开源社区** — CatBase 是站在巨人肩膀上的作品
-  - 🦎 **Zig 语言团队** — 创造了如此优秀的编译工具链
-  - 🐍 **Python 社区** — 为 CatBase 提供了语法的灵感与参考
-  - ⚙️ **C 语言生态** — 为 CatBase 提供了性能优化的参考
-  - 💬 **CatBase 社区** — 为 CatBase 提供了反馈和建议
-- 🏢 **中国广东珠海的豆子机器人科技公司** (<http://dorobot.net>) — 为 CatBase 提供了资金支持
+**Dorobot Technology** (<http://dorobot.net>) is an innovative company focused on artificial intelligence and robotics, dedicated to developing intelligent solutions. CatBase was originally created as an internal programming language to address the efficiency and performance challenges encountered in project development.
+
+> The CatBase programming language was born for AI application development. In minimal runtime environments, it can replace C and supports Python syntax.
 
 ---
 
-## 📞 联系我们
+## 🙏 Acknowledgments
 
-| 渠道 | 链接 |
+Thanks to the following individuals and organizations for their support and contributions to CatBase:
+
+- 🎓 **All CatBase language enthusiasts** — Thank you for your choice and trust
+- 🌐 **Open Source Community** — CatBase stands on the shoulders of giants
+  - 🦎 **The Zig Language Team** — For creating such an excellent compiler toolchain
+  - 🐍 **The Python Community** — For providing syntax inspiration and reference
+  - ⚙️ **The C Language Ecosystem** — For providing performance optimization reference
+  - 💬 **The CatBase Community** — For providing feedback and suggestions
+- 🏢 **Dorobot Technology Co., Ltd.** in Zhuhai, China (<http://dorobot.net>) — For providing financial support
+
+---
+
+## 📞 Contact Us
+
+| Channel | Link |
 |------|------|
-| 🌐 CatBase 官方网站 | <http://catbase-lang.com> |
-| 🏢 豆子机器人科技 | <http://dorobot.net> |
-| 📖 完整文档 | [doc/catbase.md](doc/catbase.md) |
-| 🐛 问题反馈 | [GitHub Issues](../../issues) |
-| 💡 功能建议 | [GitHub Discussions](../../discussions) |
+| 🌐 CatBase Official Website | <http://catbase-lang.com> |
+| 🏢 Dorobot Technology | <http://dorobot.net> |
+| 📖 Full Documentation | [doc/catbase.md](doc/catbase.md) |
+| 🐛 Issue Tracker | [GitHub Issues](../../issues) |
+| 💡 Feature Suggestions | [GitHub Discussions](../../discussions) |
 
 ---
 
-## 📄 许可证
+## 📄 License
 
-本项目采用 **MIT 许可证** — 详见 [LICENSE](LICENSE) 文件。
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
 
-**如果 CatBase 对你有帮助，请给一个 ⭐ Star！**
+**If CatBase helps you, please give it a ⭐ Star!**
 
-Made with ❤️ in 珠海 · [catbase-lang.com](http://catbase-lang.com) · [dorobot.net](http://dorobot.net)
+Made with ❤️ in Zhuhai · [catbase-lang.com](http://catbase-lang.com) · [dorobot.net](http://dorobot.net)
+
+</div>
