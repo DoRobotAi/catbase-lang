@@ -1292,6 +1292,7 @@ CatBase 支持以下基本数据类型：
 | `list`  | 列表   | `[1, 2, 3]`        |
 | `dict`  | 字典   | `{"key": "value"}` |
 | `bytes` | 字节序列 | `b"Hello"`         |
+| `any`   | 通用类型 | `None`, `42`, `"hi"` |
 | `function` | 函数引用 | `my_callback`     |
 
 #### 整数类型
@@ -1651,6 +1652,118 @@ IP header length: 20
 IP header hex: E5 00 14 00 00 40 00 40 06 00 00 C0 A8 01 01 C0 A8 01 02
 
 ```
+
+#### any 类型（通用类型）
+
+`any` 是 CatBase 的通用类型，可以存储任意类型的值，包括 `int`、`str`、`float`、`bool`、`list`、`dict`、`bytes` 以及 `None`。它在底层使用联合类型（`JsonValue`）实现，适用于需要动态存储不同类型值的场景，例如：
+
+- JSON 解析后的字典值（`dict[str, any]`）
+- 运行时类型不确定的变量
+- 需要存储多种类型值的容器
+
+**特点：**
+
+- `any` 类型变量可以多次赋值为不同类型的值
+- `type()` 函数对 `any` 类型变量返回 `any:实际类型` 格式（如 `any:int`、`any:str`、`any:None`）
+- 使用 `str()`、`int()`、`float()` 等类型转换函数可以从 `any` 值中提取具体类型的值
+- `any` 类型变量可以赋值为 `None`，表示空值
+
+**示例：**
+
+```catbase
+# 测试 any 类型可以存储任意类型的值
+def main(args:list[str]) {
+    # 创建一个 any 类型的变量，初始化为 None
+    x: any = None
+    print("x (None) =", str(x), ", type =", type(x))
+    
+    # 存储字符串
+    x = "hello"
+    print("x (str) =", str(x), ", type =", type(x))
+    
+    # 存储整数
+    x = 42
+    print("x (int) =", str(x), ", type =", type(x))
+    
+    # 存储浮点数
+    x = 3.14
+    print("x (float) =", str(x), ", type =", type(x))
+    
+    # 存储布尔值
+    x = True
+    print("x (bool) =", str(x), ", type =", type(x))
+    
+    # 存储列表
+    x = [1, 2, 3]
+    print("x (list) =", x, ", type =", type(x))
+    
+    # 存储字典
+    x = {"key": "value"}
+    print("x (dict) =", x, ", type =", type(x))
+    
+    print("\nAll types stored successfully in any variable!")
+}
+```
+
+**运行结果：**
+
+```
+x (None) = None , type = any:None
+x (str) = hello , type = any:str
+x (int) = 42 , type = any:int
+x (float) = 3.14 , type = any:float
+x (bool) = true , type = any:bool
+x (list) = [list] , type = any:list
+x (dict) = [dict] , type = any:dict
+
+All types stored successfully in any variable!
+```
+
+**any 类型与 dict[str, any]：**
+
+`any` 类型最常见的用法是作为 `dict[str, any]` 的值类型，用于处理 JSON 数据。`json_loads()` 返回的就是 `dict[str, any]` 类型：
+
+```catbase
+def main(args:list[str]) {
+    # JSON 解析返回 dict[str, any]
+    data: dict[str, any] = {"name": "Alice", "age": 25, "score": 95.5}
+    
+    # 使用 any 类型接收 get 返回值
+    name: any = data.get("name")
+    age: any = data.get("age")
+    missing: any = data.get("missing")   # 不存在的 key 返回 None
+    
+    print("name =", str(name), ", type =", type(name))
+    print("age =", str(age), ", type =", type(age))
+    print("missing =", str(missing), ", type =", type(missing))
+    
+    # 从 any 值中提取具体类型
+    name_str: str = str(data.get("name"))
+    age_int: int = int(data.get("age"))
+    score_float: float = float(data.get("score"))
+    
+    print("name_str =", name_str)
+    print("age_int =", age_int)
+    print("score_float =", score_float)
+}
+```
+
+**运行结果：**
+
+```
+name = Alice , type = any:str
+age = 25 , type = any:int
+missing = None , type = any:None
+name_str = Alice
+age_int = 25
+score_float = 95.5
+```
+
+**注意：**
+
+- `any` 类型变量在赋值后，其声明的类型仍然是 `any`，不会变为实际值的类型
+- 对 `any` 类型变量进行算术运算前，应先使用类型转换函数（如 `int()`、`float()`）提取具体值
+- `dict.get(key)` 对 `dict[str, any]` 找不到 key 时返回 `None`；对 `dict[str, int]` 等具体类型找不到 key 时返回该类型的零值（如 `0`、`""`、`false`）
 
 ### 3.3 类型转换
 
@@ -3681,6 +3794,46 @@ type(10) = int
 type('hello') = str
 type([1,2,3]) = list
 type(dict) = dict
+
+```
+
+对于 `any` 类型变量，`type()` 返回 `any:实际类型` 格式，表示该变量是 any 类型，并显示其当前存储值的实际类型：
+
+```catbase
+def main(args:list[str]) {
+    x: any = None
+    print("type(None) = ", type(x), "\n")
+    
+    x = 42
+    print("type(42) = ", type(x), "\n")
+    
+    x = "hello"
+    print("type('hello') = ", type(x), "\n")
+    
+    x = 3.14
+    print("type(3.14) = ", type(x), "\n")
+    
+    x = True
+    print("type(True) = ", type(x), "\n")
+    
+    x = [1, 2, 3]
+    print("type(list) = ", type(x), "\n")
+    
+    x = {"key": "value"}
+    print("type(dict) = ", type(x), "\n")
+}
+```
+
+**运行结果：**
+
+```
+type(None) = any:None
+type(42) = any:int
+type('hello') = any:str
+type(3.14) = any:float
+type(True) = any:bool
+type(list) = any:list
+type(dict) = any:dict
 
 ```
 
