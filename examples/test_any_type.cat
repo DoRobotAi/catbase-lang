@@ -1,0 +1,32 @@
+# 测试 any 类型可以存储任意类型的值
+def main(args:list[str]) {
+    # 创建一个 any 类型的变量，初始化为 None
+    x: any = None
+    print("x (None) =", str(x), ", type =", type(x))
+    
+    # 存储字符串
+    x = "hello"
+    print("x (str) =", str(x), ", type =", type(x))
+    
+    # 存储整数
+    x = 42
+    print("x (int) =", str(x), ", type =", type(x))
+    
+    # 存储浮点数
+    x = 3.14
+    print("x (float) =", str(x), ", type =", type(x))
+    
+    # 存储布尔值
+    x = True
+    print("x (bool) =", str(x), ", type =", type(x))
+    
+    # 存储列表
+    x = [1, 2, 3]
+    print("x (list) =", x, ", type =", type(x))
+    
+    # 存储字典
+    x = {"key": "value"}
+    print("x (dict) =", x, ", type =", type(x))
+    
+    print("\nAll types stored successfully in any variable!")
+}

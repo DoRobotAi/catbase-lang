@@ -1,0 +1,9 @@
+# 测试 Mutex 变量的方法调用
+def main(args:list[str]) {
+    # Mutex 不能存入 dict[str, any]（any 类型仅支持 int/str/float/bool/list/dict/None）
+    # 应使用独立变量
+    m: Mutex = mutex()
+    m.lock()
+    print("mutex method called\n")
+    m.unlock()
+}

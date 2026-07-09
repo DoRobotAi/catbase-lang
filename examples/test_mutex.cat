@@ -1,0 +1,27 @@
+# 全局计数器和互斥锁
+counter: int = 0
+m: Mutex = mutex()
+
+def increment(id: int) {
+    i: int = 0
+    while i < 1000 {
+        m.lock()
+        counter = counter + 1
+        m.unlock()
+        i = i + 1
+    }
+    print("Worker ", id, " finished\n")
+}
+
+def main(args:list[str]) {
+    # 启动3个线程同时递增计数器
+    t1: Thread = thread increment(1)
+    t2: Thread = thread increment(2)
+    t3: Thread = thread increment(3)
+
+    t1.join()
+    t2.join()
+    t3.join()
+
+    print("Final counter: ", counter, "\n")
+}

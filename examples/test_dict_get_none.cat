@@ -1,0 +1,47 @@
+# 测试 dict.get() 返回 None 是否可以用 try/catch 捕获异常
+def main(args:list[str]) {
+    # 创建一个 dict[str, any]
+    my_dict: dict[str, any] = {"name": "Alice", "age": 25}
+    
+    # 测试1：获取存在的 key
+    name: any = my_dict.get("name")
+    print("1  any =", name)
+    
+    # 测试2：获取不存在的 key，应该返回 None
+    result: any = my_dict.get("nonexistent")
+    print("2  any =", result)
+    
+    # 测试3：尝试用 try/catch 捕获 dict.get() 返回 None 的情况
+    try {
+        val: any = my_dict.get("nonexistent")
+        print("3  any =", val)
+    }
+    catch e {
+        print("3  Caught exception:", e)
+    }
+    
+    # 测试4：带默认值的 get
+    default_val: any = my_dict.get("nonexistent", "default")
+    print("4  any =", default_val)
+
+    # 测试5：get类型转换
+    data: dict[str, any] = {"name": "Alice", "age": 25}
+    print("5  data =", data)
+    
+    x:str = str(data.get("xxx"))   
+    print("6  x =", x) 
+
+    y:int = int(data.get("age"))   
+    print("7  y =", y)
+
+    z:str = str(None)   
+    print("8  z =", z) 
+
+    p:any = data.get("xxx") 
+    print("9  p =", p)
+    print("10",type(p))
+
+    s:any = data.get("age") 
+    print("11 s =", s)
+    print("12",type(s))
+}

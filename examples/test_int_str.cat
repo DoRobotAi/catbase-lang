@@ -1,0 +1,5 @@
+def main(args:list[str]) {
+    s: str = "123"
+    n: int = int(s)
+    print(n, "\n")
+}

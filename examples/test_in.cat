@@ -1,0 +1,9 @@
+def main(args:list[str]) {
+    data: dict[str, int] = {"a": 1, "b": 2}
+    key: str = "a"
+    if key in data {
+        print("found\n")
+    } else {
+        print("not found\n")
+    }
+}

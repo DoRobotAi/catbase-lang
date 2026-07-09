@@ -1,0 +1,62 @@
+def test_dict_get_one_arg() {
+    data:dict[str, int] = {"b": 1}
+    print("data = {\"b\": 1}")
+    try {
+        v:int = data.get("a")
+        print("data.get(\"a\") =", v)
+    } except Exception as e {
+        print("Error:", e, "\n")
+    }
+}
+
+def test_dict_get_try_catch() {
+    data:dict[str, int] = {"b": 1}
+    print("data = {\"b\": 1}")
+    try {
+        v:int = data.get("a")
+        if v == 0 {
+            print("got default value (0)\n")
+        } else {
+            print("v =", v, "\n")
+        }
+    } except Exception as e {
+        print("Caught error:", e, "\n")
+    }
+}
+
+def test_dict_get_existing() {
+    data:dict[str, int] = {"a": 100, "b": 200}
+    v:int = data.get("a")
+    print("data.get(\"a\") =", v, "\n")
+}
+
+def main(args:list[str]) {
+    try {
+        a:int = int(None)
+        print("1 int(None) =", a)
+
+        b:str = str(None)
+        print("2 str(None) =", b)
+
+        c:float = float(None)
+        print("3 float(None) =", c)
+
+        d:bool = bool(None)
+        print("4 bool(None) =", d)
+
+        e:int = int(None)
+        f:str = bin(e)
+        print("5 bin(int(None)) =", f)
+
+        g:list[int] = [0]
+        print("6 default list =", g)
+        //print("len:", len(g))
+
+        h:dict[str, int] = {"k": 0}
+        print("7 default dict =", h)
+        //print("len:", len(h))
+        
+    } except Exception as e {
+        print("Error:", e, "\n")
+    }
+}

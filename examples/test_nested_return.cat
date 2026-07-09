@@ -1,0 +1,16 @@
+def check(x: int) -> int {
+    if x > 0 {
+        if x > 10 {
+            return 100
+        } else {
+            return 10
+        }
+    } else {
+        return 0
+    }
+}
+
+def main(args:list[str]) {
+    n: int = check(5)
+    print(n, "\n")
+}

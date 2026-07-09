@@ -1,0 +1,7 @@
+def main(args:list[str]){
+	i: int = 0
+	for i in range(0, 5) {
+		j: int = i + 1 
+		print(j)
+	}
+}

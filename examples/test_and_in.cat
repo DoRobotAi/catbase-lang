@@ -1,0 +1,10 @@
+def main(args:list[str]) {
+    data: dict[str, int] = {"a": 1, "b": 2}
+    key1: str = "a"
+    key2: str = "b"
+    if key1 in data and key2 in data {
+        print("both found\n")
+    } else {
+        print("not both\n")
+    }
+}

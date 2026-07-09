@@ -1,0 +1,15 @@
+def main(args:list[str]) {
+    data: dict[str, int] = {"b": 1}
+    v:int = data.get("a",100)
+    print(v)
+    u:int = data.get("a")
+    print(u)
+
+    data2: dict[str, str] = {"b": "AAA"}
+    w:str = data2.get("a","None")
+    print(w)
+    x:str = data2.get("a")
+    print(x)    
+    y:str = data2.get("b")
+    print(y)        
+}

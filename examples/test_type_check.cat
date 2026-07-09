@@ -1,6 +1,34 @@
 def main(args:list[str]) {
-    # 测试不支持的类型转换
-    # x:dict[str, any] = {}
-    y:str = str(1)  # dict 类型不能直接转换为 str，应该报错
-    print(y)
+    x:dict[str,str] = {"key": "value"}
+    print("x (dict) =", x, ", type =", type(x))
+    if type(x)!="dict"{
+        print("ERROR")
+    }
+    y:list[str] = ["key","value"]
+    print("y (list) =", y, ", type =", type(y))
+    if type(y)!="list"{
+        print("ERROR")
+    }
+    z:int = 0
+    print("z (int) =", z, ", type =", type(z))
+    if type(z)!="int"{
+        print("ERROR")
+    }
+    e:float = 0
+    print("e (float) =", e, ", type =", type(e))
+    if type(e)!="float"{
+        print("ERROR")
+    }
+    f:bool = True
+    print("f (bool) =", f, ", type =", type(f))
+    if type(f)!="bool"{
+        print("ERROR")
+    }
+    msg: str = "Hello, Serial!"
+    msg_bytes: bytes = bytes(msg)
+
+    print("msg_bytes (bytes) =", msg_bytes, ", type =", type(msg_bytes))
+    if type(msg_bytes)!="bytes"{
+        print("ERROR")
+    }
 }
