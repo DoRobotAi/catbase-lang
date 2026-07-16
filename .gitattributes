@@ -1,2 +1,2 @@
 *.zig linguist-vendored
-*.cat linguist-language=Python
+*.cat linguist-language=Pythonbin/* linguist-vendored
