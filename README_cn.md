@@ -415,4 +415,4 @@ Made with ❤️ in 中国珠海 · [catbase-lang.com](http://catbase-lang.com) 
 
 加微信交流群：
 
-<img src="wechat.jpg" alt="CatBase Logo" style="zoom:25%;" />
+<img src="wechat.jpg" alt="CatBase Logo" />
