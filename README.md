@@ -414,6 +414,6 @@ Made with ❤️ in Zhuhai, China · [catbase-lang.com](http://catbase-lang.com)
 
 Join WeChat communication group:
 
-<img src="wechat.jpg" alt="CatBase Logo" style="zoom:25%;" />
+<img src="wechat.jpg" alt="CatBase Logo" style="zoom:20%;" />
 
 </div>
