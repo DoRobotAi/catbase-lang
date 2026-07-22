@@ -283,6 +283,8 @@ catbasecc source.cat
 
 # 编译并运行
 catbasecc source.cat && ./source
+# 或者
+catbasecc run source.cat
 ```
 
 #### 命令行参数
@@ -991,7 +993,48 @@ q:Queue = queue(maxsize)  # maxsize 为 0 表示无限制队列
 ```
 
 **支持的类型：**
-Queue 支持 int、float、str、bytes 四种类型。**第一次放入的元素类型决定后续所有元素的类型**，类型不匹配的元素会被静默丢弃。
+Queue 支持 int、float、str、bytes、bool 五种类型（编译期分派，根据 put 参数类型自动生成对应的 fromXxx 代码）。**第一次放入的元素类型决定后续所有元素的类型**，类型不匹配的元素会被静默丢弃。
+
+**put/get 多类型分派（v0.0.8 新增）：**
+
+| 传入类型 | 生成的 Zig 代码 | QueueItem 内部 |
+|---------|----------------|---------------|
+| `str` | `QueueItem.fromStr(arg)` | Str 变体 |
+| `bytes` | `QueueItem.fromBytes(arg)` | **Bytes 变体（新增）** |
+| `int` | `QueueItem.fromInt(arg)` | Int 变体 |
+| `float` | `QueueItem.fromFloat(arg)` | Float 变体 |
+| `bool` | `QueueItem.fromInt(@intFromBool(arg))` | Int 变体（0/1）|
+
+**get 时的多类型访问：**
+
+| 目标类型 | 生成的 Zig 代码 | 返回值 |
+|---------|----------------|--------|
+| `var x: str` | `q.get().getStr()` | Str |
+| `var x: bytes` | `q.get().getBytes()` | []u8（新增）|
+| `var x: int` | `q.get().getInt()` | i64 |
+| `var x: float` | `q.get().getFloat()` | f64 |
+
+**音频 callback 配合 Queue（v0.0.8 新增）：**
+
+```catbase
+audio_queue: Queue = queue(100)
+
+def on_audio_data(data:bytes) {     # bytes 回调
+    audio_queue.put(data, -1)        # ✅ 自动分派到 fromBytes
+}
+
+# 创建 RecordStream 时，编译器自动选择 setBytesCallback
+rec_stream: RecordStream = recordStream(
+    rate=16000, channels=1, chunk=512, format=3,
+    device_name="default", callback=on_audio_data   # bytes 参数自动识别
+)
+```
+
+**注意：**
+- 用户代码层面**完全无变化**：`q.put(data, -1)` 自动根据 `data` 类型分派
+- `bytes` 类型会克隆数据并由队列拥有（避免线程退出时数据被释放）
+- `getBytes()` 转移所有权，返回的 `[]u8` 需要调用方负责释放
+- `RecordStream` 支持 `setBytesCallback` 用于接收 bytes 数据的 callback
 
 **常用方法：**
 
@@ -8174,32 +8217,42 @@ def main(args:list[str]) {
 | `read()`      | str  | 读取一个 chunk 的音频数据 |
 | `is_active()` | bool | 检查录音流是否处于活跃状态    |
 | `close()`     | None | 关闭录音流            |
-| `setCallback(callback)` | None | 设置回调函数 |
+| `setCallback(callback)` | None | **设置 str 回调函数（向后兼容）** |
+| `setBytesCallback(callback)` | None | **设置 bytes 回调函数（v0.0.8 新增）** |
 | `startRecording()` | None | 启动带回调的异步录音 |
 | `stopRecording()` | None | 停止录音 |
 
-**回调机制说明：**
+**回调机制说明（v0.0.8 增强）：**
 
 CatBase 支持音频回调机制，参考 Python sounddevice 的回调模式。当指定 `callback` 参数时：
 - 录音会在独立线程中异步进行
 - 每当有新的音频数据可用时，自动调用回调函数
-- 回调函数接收一个 `bytes` 参数，包含音频数据
+- 回调函数接收一个参数，**支持 str 或 bytes 两种类型**
+- 编译器**自动分派**：`callback` 的第一个参数是 `bytes` → `setBytesCallback`，否则 → `setCallback`
 
 **回调函数签名：**
+
 ```catbase
+# 方式 1：bytes 回调（推荐，配合 Queue 使用）
 def on_audio_data(data: bytes) {
-    # data 是一个 chunk 的音频数据
-    print("Received", len(data), "bytes")
+    audio_queue.put(data, -1)   # ✅ 自动分派到 fromBytes
+}
+
+# 方式 2：str 回调（向后兼容）
+def on_audio_data(data: str) {
+    print("Received: ", data, "\n")
 }
 ```
 
 **使用回调的录音示例：**
 
 ```catbase
-# 录音回调函数 - 当有新的音频数据时被调用
+audio_queue: Queue = queue(100)
+
+# bytes 回调函数 - 当有新的音频数据时被调用
 def on_audio_data(data: bytes) {
-    print("Received audio frame: ", len(data), " bytes")
-    # 可以在这里处理音频数据，如保存、分析等
+    print("Received audio frame\n")
+    audio_queue.put(data, -1)  # ✅ 自动用 fromBytes
 }
 
 def main(args: list[str]) {
@@ -8366,33 +8419,41 @@ def main(args:list[str]) {
 | `is_active()` | bool | 检查播放流是否处于活跃状态 |
 | `wait()` | None | 等待播放完成 |
 | `close()` | None | 关闭播放流 |
-| `setCallback(callback)` | None | 设置回调函数 |
+| `setCallback(callback)` | None | **设置 str 回调函数（向后兼容）** |
+| `setBytesCallback(callback)` | None | **设置 bytes 回调函数（v0.0.8 新增）** |
 | `startPlaying()` | None | 启动带回调的异步播放 |
 | `stopPlaying()` | None | 停止播放 |
 
-**播放回调机制说明：**
+**播放回调机制说明（v0.0.8 增强）：**
 
 当指定 `callback` 参数时，播放会在独立线程中异步进行：
 - 每当音频设备需要数据时，自动调用回调函数获取音频数据
-- 回调函数返回 `bytes` 类型的音频数据
+- 回调函数返回音频数据，**支持 str 或 bytes 两种类型**
+- 编译器**自动分派**：`callback` 的返回类型是 `bytes` → `setBytesCallback`，否则 → `setCallback`
 - 返回空数据时，播放会暂停等待
 
 **回调函数签名：**
+
 ```catbase
+# 方式 1：bytes 回调（推荐）
 def get_audio_data() -> bytes {
-    # 返回音频数据供播放
-    return bytes("audio_data_for_playback")
+    return b"\x00\x00\x00\x00"  # 返回音频数据
+}
+
+# 方式 2：str 回调（向后兼容）
+def get_audio_data() -> str {
+    return "audio_data"
 }
 ```
 
 **使用回调的播放示例：**
 
 ```catbase
-# 播放回调函数 - 当音频设备需要数据时被调用
+# bytes 播放回调函数 - 当音频设备需要数据时被调用
 def get_audio_data() -> bytes {
     # 可以在这里生成或获取音频数据
     # 例如：从文件读取、实时合成、从网络接收等
-    return bytes("audio_chunk_data")
+    return b"\x00\x00\x00\x00"
 }
 
 def main(args: list[str]) {
