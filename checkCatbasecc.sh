@@ -3,9 +3,12 @@
 # CatBase 批量测试脚本
 # 用于测试 examples/ 文件夹中的所有 .cat 程序
 
-CATBASE_CC="./bin/catbasecc"
-EXAMPLES_DIR="./examples"
-RESULTS_FILE="test_results.txt"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR" || exit 1
+
+CATBASE_CC="$SCRIPT_DIR/bin/catbasecc"
+EXAMPLES_DIR="$SCRIPT_DIR/examples"
+RESULTS_FILE="$SCRIPT_DIR/test_results.txt"
 
 # 颜色定义
 RED='\033[0;31m'
