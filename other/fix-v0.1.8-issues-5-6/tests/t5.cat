@@ -1,0 +1,5 @@
+def main(args: list[str]) {
+    n: int = 42
+    print(f"line1 {n}\\nline2 {n}")
+    print("\n")
+}

@@ -1,0 +1,12 @@
+def main(args: list[str]) {
+    n: int = 42
+    print(f"|{n:5d}|", "\n")
+    print(f"|{n:<5d}|", "\n")
+    print(f"|{n:^5d}|", "\n")
+    print(f"|{n:0>5d}|", "\n")
+    print(f"|{n:*>5d}|", "\n")
+    print(f"|{n:=^5d}|", "\n")
+    print(f"|{n:_<5d}|", "\n")
+    neg: int = -42
+    print(f"|{neg:05d}|", "\n")
+}
