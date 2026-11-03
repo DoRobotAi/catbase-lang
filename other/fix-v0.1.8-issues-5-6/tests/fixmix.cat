@@ -1,0 +1,17 @@
+struct Inner {
+    m: dict[str, int]
+    xs: list[int]
+}
+struct Outer {
+    inner: Inner
+    name: str
+}
+def main(args: list[str]) {
+    o: Outer = Outer { inner: Inner { m: {"a": 1}, xs: [1, 2] }, name: "n" }
+    o.inner.m["b"] = 3
+    o.inner.m.put("c", 4)
+    o.inner.xs[0] = 10
+    print(o.inner.m, "\n")
+    print(o.inner.xs, "\n")
+    print(o.name, "\n")
+}

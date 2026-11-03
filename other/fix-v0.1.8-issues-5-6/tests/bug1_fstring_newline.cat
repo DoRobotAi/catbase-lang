@@ -1,0 +1,4 @@
+def main(args: list[str]) {
+    name: str = "cat"
+    print(f"hi {name}\n")
+}

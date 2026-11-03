@@ -1,0 +1,8 @@
+struct State {
+    xs: list[int] = [1]
+}
+def main(args: list[str]) {
+    s: State = State { }
+    s.xs[0] = 9
+    print(s.xs, "\n")
+}

@@ -1,0 +1,6 @@
+def main(args: list[str]) {
+    n: int = 5
+    s: str = f"a\\b {n} \\d"
+    print(s)
+    print("\n")
+}

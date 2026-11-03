@@ -1,0 +1,12 @@
+struct C {
+    d: dict[str, int]
+}
+def makeC() -> C {
+    c: C = C { d: {} }
+    c.d["k"] = 5
+    return c
+}
+def main(args: list[str]) {
+    c: C = makeC()
+    print(c.d, "\n")
+}

@@ -1,0 +1,10 @@
+#!/bin/bash
+# zig shim: post-processes catcc-generated .zig files, then execs the real zig.
+# Installs the fixes for upstream issues #5 (f-string escapes) and #6 (struct
+# dict field index-assign *const receiver) without touching the catcc binary.
+for a in "$@"; do
+  case "$a" in *.zig)
+    perl "$(dirname "$(readlink -f "$0")")/../fixzig.pl" "$a" 2>/dev/null || true
+  ;; esac
+done
+exec /usr/local/zig/zig "$@"

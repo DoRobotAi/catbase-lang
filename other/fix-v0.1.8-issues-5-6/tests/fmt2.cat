@@ -1,0 +1,7 @@
+def main(args: list[str]) {
+    n: int = -42
+    print(f"{n:5d}", "\n")
+    print(f"{n:05d}", "\n")
+    x: float = 0.1
+    print(f"{x:.17f}", "\n")
+}

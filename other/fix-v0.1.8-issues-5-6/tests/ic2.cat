@@ -1,0 +1,8 @@
+struct State {
+    counts: dict[str, int]
+}
+def main(args: list[str]) {
+    s: State = State { counts: {"a": 1} }
+    s.counts.put("b", 2)
+    print(s.counts, "\n")
+}
