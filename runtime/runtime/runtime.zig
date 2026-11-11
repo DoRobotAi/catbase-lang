@@ -1999,67 +1999,9 @@ fn connectionThread(ctx: *ConnectionContext) void {
 pub fn httpPost(allocator: Allocator, url: Str, headers: Str, json_data: anytype, body: Str, timeout_secs: u32, stream_mode: bool) !Response {
     const parsed = parseUrl(url.data);
 
-    // 使用 getAddressList 进行 DNS 解析（支持域名和 localhost）
-    const addr_list = std.net.getAddressList(allocator, parsed.host, parsed.port) catch {
-        return error.HostUnreachable;
-    };
-    defer addr_list.deinit();
-
-    // 遍历所有地址，找到一个可以连接的
-    var connected = false;
-    var sockfd: std.posix.socket_t = undefined;
-    var addresses: std.net.Address = undefined;
-
-    for (addr_list.addrs) |addr| {
-        addresses = addr;
-        sockfd = std.posix.socket(addresses.any.family, std.posix.SOCK.STREAM, 0) catch continue;
-
-        // 设置 O_NONBLOCK
-        const flags = std.posix.fcntl(sockfd, std.posix.F.GETFL, 0) catch {
-            std.posix.close(sockfd);
-            continue;
-        };
-        const nonblock_val: u32 = 0o4000; // O_NONBLOCK value for x86_64
-        _ = std.posix.fcntl(sockfd, std.posix.F.SETFL, flags | nonblock_val) catch {};
-
-        // 尝试连接
-        _ = std.posix.connect(sockfd, &addresses.any, addresses.getOsSockLen()) catch {};
-
-        // 连接进行中，等待完成或超时
-        var pollfd = [_]std.os.linux.pollfd{
-            std.os.linux.pollfd{
-                .fd = sockfd,
-                .events = std.os.linux.POLL.OUT | std.os.linux.POLL.ERR | std.os.linux.POLL.NVAL,
-                .revents = 0,
-            },
-        };
-
-        const timeout_ms = @as(i32, @intCast(timeout_secs * 1000));
-        const poll_result = std.os.linux.poll(&pollfd, 1, timeout_ms);
-
-        if (poll_result > 0 and (pollfd[0].revents & (std.os.linux.POLL.ERR | std.os.linux.POLL.NVAL) == 0)) {
-            // 检查连接错误
-            std.posix.getsockoptError(sockfd) catch {
-                std.posix.close(sockfd);
-                continue;
-            };
-            // 连接成功
-            connected = true;
-            // 清除 O_NONBLOCK，恢复阻塞模式
-            _ = try std.posix.fcntl(sockfd, std.posix.F.SETFL, flags);
-            break;
-        }
-        std.posix.close(sockfd);
-    }
-
-    if (!connected) {
-        return error.HostUnreachable;
-    }
-
-    errdefer std.posix.close(sockfd);
-
-    // 创建 Stream 对象
-    const stream = std.net.Stream{ .handle = sockfd };
+    // 建连：https 时由 httpConnect 完成 TLS 握手
+    var conn = try httpConnect(allocator, url, timeout_secs);
+    defer conn.close();
 
     var request_body = std.ArrayList(u8).init(allocator);
     defer request_body.deinit();
@@ -2138,43 +2080,63 @@ pub fn httpPost(allocator: Allocator, url: Str, headers: Str, json_data: anytype
     }
     defer allocator.free(request);
 
-    stream.writeAll(request) catch {
-        stream.close();
-        return error.Timeout;
-    };
+    // 发送请求：明文走 posix.send，https 走 TLS writeAll
+    try conn.sendAll(request);
 
     if (stream_mode) {
+        // stream_mode 依赖裸 Stream 逐行读取并交给 Response 迭代；
+        // TLS 连接不支持该模式，显式报错而不是退化成明文。
+        if (conn.tls != null) return error.TlsStreamModeUnsupported;
+        const fd = conn.sockfd;
+        conn.sockfd = -1; // Stream 接管所有权，由 Response 迭代时关闭
+        const stream = std.net.Stream{ .handle = fd };
         const response_line = readLine(stream, allocator);
         const status_code = parseStatusCode(response_line);
         return Response.initStream(allocator, status_code, stream);
     }
 
-    defer stream.close();
-
     var buffer: [65536]u8 = undefined;
     var total_read: usize = 0;
-    var chunk_buf: [8192]u8 = undefined;
-    var bytes_read: usize = 0;
+    var resp_content_length: ?usize = null;
+    var headers_parsed = false;
+    var resp_is_chunked = false;
+    var body_start: usize = 0;
 
-    while (true) {
-        if (stream.read(&chunk_buf)) |b| {
-            bytes_read = b;
-        } else |_| {
-            stream.close();
-            return error.Timeout;
+    while (total_read < buffer.len) {
+        const n = conn.read(buffer[total_read..]) catch |err| {
+            if (err == error.Timeout and total_read > 0) break;
+            return err;
+        };
+        if (n == 0) break;
+        total_read += n;
+
+        if (!headers_parsed) {
+            if (std.mem.indexOf(u8, buffer[0..total_read], "\r\n\r\n")) |hdr_end| {
+                headers_parsed = true;
+                body_start = hdr_end + 4;
+                const headers_block = buffer[0..hdr_end];
+                if (std.mem.indexOf(u8, headers_block, "Content-Length:")) |cl_idx| {
+                    const rest = headers_block[cl_idx + 15 ..];
+                    const cl_end = std.mem.indexOfAny(u8, rest, "\r\n") orelse rest.len;
+                    resp_content_length = std.fmt.parseInt(usize, std.mem.trim(u8, rest[0..cl_end], " \t"), 10) catch null;
+                }
+                resp_is_chunked = headerHasChunked(headers_block);
+                if (resp_content_length) |cl| {
+                    if (total_read >= body_start + cl) break;
+                }
+            }
+        } else if (resp_content_length) |cl| {
+            if (total_read >= body_start + cl) break;
         }
-        if (bytes_read == 0) break;
-
-        if (total_read + bytes_read > buffer.len) break;
-        @memcpy(buffer[total_read .. total_read + bytes_read], chunk_buf[0..bytes_read]);
-        total_read += bytes_read;
-
-        if (total_read >= 4 and std.mem.eql(u8, buffer[total_read - 4 .. total_read], "\r\n\r\n")) {
-            break;
+        if (headers_parsed and resp_is_chunked and total_read > body_start) {
+            if (std.mem.indexOf(u8, buffer[body_start - 2 .. total_read], "\r\n0\r\n\r\n") != null) break;
         }
     }
 
-    const response_body = extractBody(buffer[0..total_read]);
+    if (total_read == 0) return error.ConnectionFailed;
+
+    const owned = try allocator.dupe(u8, buffer[0..total_read]);
+    const response_body = extractBodyOwned(allocator, owned);
     return Response.init(allocator, response_body.status_code, response_body.body);
 }
 
@@ -2234,6 +2196,25 @@ fn extractBody(response: []u8) struct { status_code: u16, body: Str } {
     return .{
         .status_code = status_code,
         .body = Str{ .data = body_content, .allocator = undefined, .borrowed = true },
+    };
+}
+
+// extractBodyOwned —— 与 extractBody 相同，但 body 是响应 buffer 的副本，
+// 由 Str 自己持有（调用方可以把原始 buffer 释放）。
+fn extractBodyOwned(allocator: Allocator, response: []u8) struct { status_code: u16, body: Str } {
+    const idx = std.mem.indexOf(u8, response, "\r\n\r\n") orelse response.len;
+    const header_part = response[0..idx];
+    const body_start = idx + 4;
+
+    const status_line_end = std.mem.indexOf(u8, header_part, "\r\n") orelse header_part.len;
+    const status_code = parseStatusCode(header_part[0..status_line_end]);
+
+    const body_content = if (body_start <= response.len) response[body_start..] else &[_]u8{};
+    const body_owned: []u8 = allocator.dupe(u8, body_content) catch unreachable;
+
+    return .{
+        .status_code = status_code,
+        .body = Str{ .data = body_owned, .allocator = allocator, .borrowed = false },
     };
 }
 
@@ -3151,70 +3132,138 @@ fn parseUrl(url: []const u8) struct { host: []const u8, port: u16, path: []const
     return .{ .host = host, .port = port, .path = path };
 }
 
+// urlUsesTls —— URL 是否要求 TLS（只看 scheme：https:// 为 true）。
+// 注意不能用「端口 == 443」判断：用户可以写 https://host:8443。
+fn urlUsesTls(url: []const u8) bool {
+    return std.mem.startsWith(u8, url, "https://");
+}
+
+// 客户端连接抽象：https 走 TLS（std.crypto.tls.Client），http 走明文 socket。
+//
+// 为什么 https 不能再走裸 socket：parseUrl 只是把 https 的默认端口设成 443，
+// 原来的 httpGet/httpPost 仍然用明文 socket 发请求。TLS 端口收到明文会直接
+// 回 400/497（抓包首字节就是 16 进制 47 45 54 20，即 "GET "），对真实站点
+// 也一样失败。
+//
+// 证书验证：主机名（SAN/CN）+ 系统默认 CA 包（由 Certificate.Bundle.rescan
+// 自动发现 /etc/ssl/certs 等路径）。验证失败返回 error.CertificateVerifyFailed，
+// 绝不静默降级成明文或忽略校验。
+const HttpConn = struct {
+    sockfd: std.posix.socket_t,
+    tls: ?std.crypto.tls.Client = null,
+
+    fn sendAll(self: *HttpConn, bytes: []const u8) !void {
+        if (self.tls) |*t| {
+            const stream = std.net.Stream{ .handle = self.sockfd };
+            t.writeAll(stream, bytes) catch |err| switch (err) {
+                error.WouldBlock => return error.Timeout,
+                else => return error.ConnectionFailed,
+            };
+            return;
+        }
+        var sent: usize = 0;
+        while (sent < bytes.len) {
+            const n = std.posix.send(self.sockfd, bytes[sent..], 0) catch return error.ConnectionFailed;
+            sent += n;
+        }
+    }
+
+    fn read(self: *HttpConn, buf: []u8) !usize {
+        if (self.tls) |*t| {
+            const stream = std.net.Stream{ .handle = self.sockfd };
+            return t.read(stream, buf) catch |err| switch (err) {
+                error.WouldBlock => error.Timeout,
+                // 对端未发 close_notify 直接断开：已有数据按正常结束处理
+                error.TlsConnectionTruncated => 0,
+                else => error.ConnectionFailed,
+            };
+        }
+        return std.posix.recv(self.sockfd, buf, 0) catch |err| switch (err) {
+            error.WouldBlock => error.Timeout,
+            else => error.ConnectionFailed,
+        };
+    }
+
+    fn close(self: *HttpConn) void {
+        if (self.tls) |*t| {
+            // 尽力发 close_notify，失败不影响响应结果
+            const stream = std.net.Stream{ .handle = self.sockfd };
+            _ = t.writeEnd(stream, &[_]u8{}, true) catch {};
+        }
+        std.posix.close(self.sockfd);
+    }
+};
+
+// headerHasChunked —— 响应头里是否声明了 Transfer-Encoding: chunked（大小写不敏感）。
+fn headerHasChunked(headers_block: []const u8) bool {
+    var it = std.mem.splitScalar(u8, headers_block, '\n');
+    while (it.next()) |line| {
+        const trimmed = std.mem.trimRight(u8, line, "\r");
+        if (std.ascii.startsWithIgnoreCase(trimmed, "transfer-encoding:")) {
+            return std.ascii.indexOfIgnoreCase(trimmed, "chunked") != null;
+        }
+    }
+    return false;
+}
+
+// setSocketTimeout —— 设置 SO_RCVTIMEO / SO_SNDTIMEO，让读写不会无限阻塞。
+// 超过 timeout_secs 未就绪时 recv/send 返回 WouldBlock（上层映射为 Timeout）。
+fn setSocketTimeout(sockfd: std.posix.socket_t, timeout_secs: u32) void {
+    const timeout_ms: i32 = @intCast(timeout_secs * 1000);
+    if (timeout_ms <= 0) return;
+    const tv = std.os.linux.timeval{
+        .sec = @as(isize, @intCast(@divFloor(timeout_ms, 1000))),
+        .usec = @as(isize, @intCast(@mod(timeout_ms, 1000) * 1000)),
+    };
+    const tb = std.mem.asBytes(&tv);
+    const tl: std.os.linux.socklen_t = @intCast(tb.len);
+    _ = std.os.linux.setsockopt(sockfd, std.posix.SOL.SOCKET, std.posix.SO.SNDTIMEO, tb.ptr, tl);
+    _ = std.os.linux.setsockopt(sockfd, std.posix.SOL.SOCKET, std.posix.SO.RCVTIMEO, tb.ptr, tl);
+}
+
+// httpConnect —— DNS + TCP 建连 +（https 时）TLS 握手。
+// 返回的连接由调用方 HttpConn.close() 关闭。
+fn httpConnect(allocator: Allocator, url: Str, timeout_secs: u32) !HttpConn {
+    const parsed = parseUrl(url.data);
+    const stream = std.net.tcpConnectToHost(allocator, parsed.host, parsed.port) catch return error.HostUnreachable;
+    const sockfd = stream.handle;
+    setSocketTimeout(sockfd, timeout_secs);
+
+    if (!urlUsesTls(url.data)) {
+        return HttpConn{ .sockfd = sockfd };
+    }
+
+    // 系统 CA 包：rescan 失败时 bundle 为空，握手会以
+    // CertificateIssuerMismatch 失败（仍然不会退化成不校验）
+    var bundle: std.crypto.Certificate.Bundle = .{};
+    bundle.rescan(allocator) catch {};
+    defer bundle.deinit(allocator);
+
+    const client = std.crypto.tls.Client.init(stream, .{
+        .host = .{ .explicit = parsed.host },
+        .ca = .{ .bundle = bundle },
+    }) catch |err| {
+        std.posix.close(sockfd);
+        return switch (err) {
+            error.CertificateHostMismatch,
+            error.CertificateExpired,
+            error.CertificateNotYetValid,
+            error.CertificateIssuerMismatch,
+            error.CertificatePublicKeyInvalid,
+            error.CertificateFieldHasInvalidLength,
+            error.TlsCertificateNotVerified,
+            => error.CertificateVerifyFailed,
+            else => error.TlsHandshakeFailed,
+        };
+    };
+    return HttpConn{ .sockfd = sockfd, .tls = client };
+}
+
 pub fn httpGet(allocator: Allocator, url: Str, timeout_secs: u32) !Str {
     const parsed = parseUrl(url.data);
 
-    // 使用 getAddressList 进行 DNS 解析（支持域名）
-    const addr_list = std.net.getAddressList(allocator, parsed.host, parsed.port) catch {
-        return error.HostUnreachable;
-    };
-    defer addr_list.deinit();
-
-    // 遍历所有地址，找到一个可以连接的
-    var connected = false;
-    var sockfd: std.posix.socket_t = undefined;
-    var maybe_address: std.net.Address = undefined;
-
-    for (addr_list.addrs) |addr| {
-        maybe_address = addr;
-        sockfd = std.posix.socket(maybe_address.any.family, std.posix.SOCK.STREAM, 0) catch continue;
-
-        // 设置 O_NONBLOCK
-        const flags = @as(u32, @intCast(std.posix.fcntl(sockfd, std.posix.F.GETFL, 0) catch {
-            std.posix.close(sockfd);
-            continue;
-        }));
-        _ = std.posix.fcntl(sockfd, std.posix.F.SETFL, flags | 0o4000) catch {};
-
-        // 尝试连接
-        _ = std.posix.connect(sockfd, &maybe_address.any, maybe_address.getOsSockLen()) catch {};
-
-        // 连接进行中，等待完成或超时
-        var pollfd = [_]std.os.linux.pollfd{
-            std.os.linux.pollfd{
-                .fd = sockfd,
-                .events = std.os.linux.POLL.OUT | std.os.linux.POLL.ERR | std.os.linux.POLL.NVAL,
-                .revents = 0,
-            },
-        };
-
-        const timeout_val = @as(i32, @intCast(timeout_secs * 1000));
-        const poll_result = std.os.linux.poll(&pollfd, 1, timeout_val);
-
-        if (poll_result > 0 and (pollfd[0].revents & (std.os.linux.POLL.ERR | std.os.linux.POLL.NVAL) == 0)) {
-            // 检查连接错误
-            std.posix.getsockoptError(sockfd) catch {
-                std.posix.close(sockfd);
-                continue;
-            };
-            // 连接成功
-            connected = true;
-            // 清除 O_NONBLOCK，恢复阻塞模式
-            _ = try std.posix.fcntl(sockfd, std.posix.F.SETFL, flags);
-            break;
-        }
-        std.posix.close(sockfd);
-    }
-
-    if (!connected) {
-        return error.HostUnreachable;
-    }
-
-    defer std.posix.close(sockfd);
-
-    // 将 socket 转换为流
-    const stream = std.net.Stream{ .handle = sockfd };
-    defer stream.close();
+    var conn = try httpConnect(allocator, url, timeout_secs);
+    defer conn.close();
 
     const request = try std.fmt.allocPrint(allocator, "GET {s} HTTP/1.1\r\nHost: {s}\r\nConnection: close\r\n\r\n", .{
         parsed.path,
@@ -3222,14 +3271,55 @@ pub fn httpGet(allocator: Allocator, url: Str, timeout_secs: u32) !Str {
     });
     defer allocator.free(request);
 
-    try stream.writeAll(request);
+    try conn.sendAll(request);
 
-    var buffer: [8192]u8 = undefined;
-    const bytes_read = try stream.read(&buffer);
+    // 边收边判断响应边界：Content-Length 收齐，或对端 close。
+    // 旧实现只读一次 8192 字节，大响应会被截断。
+    var buffer = std.ArrayList(u8).init(allocator);
+    defer buffer.deinit();
+    var chunk: [8192]u8 = undefined;
+    var content_length: ?usize = null;
+    var headers_parsed = false;
+    var is_chunked = false;
+    var body_start: usize = 0;
+
+    while (true) {
+        const n = conn.read(&chunk) catch |err| {
+            if (err == error.Timeout and buffer.items.len > 0) break;
+            return err;
+        };
+        if (n == 0) break;
+        try buffer.appendSlice(chunk[0..n]);
+
+        if (!headers_parsed) {
+            if (std.mem.indexOf(u8, buffer.items, "\r\n\r\n")) |hdr_end| {
+                headers_parsed = true;
+                body_start = hdr_end + 4;
+                const headers_block = buffer.items[0..hdr_end];
+                if (std.mem.indexOf(u8, headers_block, "Content-Length:")) |cl_idx| {
+                    const rest = headers_block[cl_idx + 15 ..];
+                    const cl_end = std.mem.indexOfAny(u8, rest, "\r\n") orelse rest.len;
+                    content_length = std.fmt.parseInt(usize, std.mem.trim(u8, rest[0..cl_end], " \t"), 10) catch null;
+                }
+                is_chunked = headerHasChunked(headers_block);
+                if (content_length) |cl| {
+                    if (buffer.items.len >= body_start + cl) break;
+                }
+            }
+        } else if (content_length) |cl| {
+            if (buffer.items.len >= body_start + cl) break;
+        }
+        // chunked response: stop once the terminating zero chunk is seen.
+        if (headers_parsed and is_chunked and buffer.items.len > body_start) {
+            if (std.mem.indexOf(u8, buffer.items[body_start - 2 ..], "\r\n0\r\n\r\n") != null) break;
+        }
+    }
+
+    if (buffer.items.len == 0) return error.ConnectionFailed;
     return Str{
-        .data = buffer[0..bytes_read],
+        .data = try allocator.dupe(u8, buffer.items),
         .allocator = allocator,
-        .borrowed = true,
+        .borrowed = false,
     };
 }
 
